@@ -16,6 +16,7 @@ interface ProfileData {
   email: string;
   mobile_number: string;
   gender: string | null;
+  profile_pic: string | File | undefined;
 }
 
 export default function DriverInfoCard() {
@@ -33,6 +34,7 @@ export default function DriverInfoCard() {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
 
 
   //* Reset-password
@@ -89,16 +91,18 @@ export default function DriverInfoCard() {
     last_name: '',
     email: '',
     mobile_number: '',
-    gender: ''
+    gender: '',
+    profile_pic: '',
   });
 
   //* API Modal-Data
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProfileData>({
     first_name: "",
     last_name: "",
     email: "",
     mobile_number: "",
     gender: "",
+    profile_pic: undefined,
   });
 
   //! Modal Data display API
@@ -116,6 +120,22 @@ export default function DriverInfoCard() {
     fetchProfileData();
   };
 
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName.charAt(0).toUpperCase()}${lastName.charAt(0).toUpperCase()}`;
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setFormData((prevData) => ({
+        ...prevData,
+        profile_pic: file,
+      }));
+      setPreview(imageUrl);
+    }
+  };
+
   //! API for update Profile
   const handleSave = async () => {
     try {
@@ -127,15 +147,20 @@ export default function DriverInfoCard() {
         email: formData.email,
         mobile_number: formData.mobile_number,
         gender: formData.gender,
+        profile_pic: formData.profile_pic,
       };
-      console.log("Payload being sent to API:", payload);
+      // console.log("Payload being sent to API:", payload);
 
-      const response = await API.patch('/updateProfileView',payload);
+      const response = await API.patch('/updateProfileView', payload, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       console.log("Updated Profile:", response.data);
       setTimeout(() => {
         toast.success("Profile updated successfully!");
         closeModal();
-      }, 1500);
+      }, 1000);
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error("Failed to update profile.");
@@ -144,10 +169,8 @@ export default function DriverInfoCard() {
     }
   };
 
-
   //! Api for getting profile-info
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
     API.get('/ProfileView')
       .then(res => {
         setProfile(res.data);
@@ -167,6 +190,27 @@ export default function DriverInfoCard() {
           </h4>
 
           <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+
+            <div>
+              <p>Profile Image</p>
+              <div
+                className="flex items-center justify-center font-bold text-lg h-full w-full"
+              >
+                {profile.profile_pic ? (
+                  <img
+                    src={profile.profile_pic}
+                    alt="User"
+                    className="h-25 w-25 object-cover rounded-full"
+                  />
+                ) : (
+                  <div className="text-blue-500">
+                    {getInitials(profile.first_name, profile.last_name)}
+                  </div>
+                )}
+              </div>
+            </div>
+            <br />
+
             <div>
               <p className="mb-2 text-xs leading-normal text-black-500 dark:text-gray-400">
                 First Name
@@ -280,6 +324,35 @@ export default function DriverInfoCard() {
                 <h5 className="mb-4 text-base font-medium text-gray-800 dark:text-white/90">
                   Personal Information
                 </h5>
+
+                {/* Profile Image Section - Centered */}
+                <div className="flex flex-col items-center mb-6">
+                  <label htmlFor="profile-pic-upload" className="cursor-pointer group">
+                    <div className="h-24 w-24 rounded-full overflow-hidden border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center bg-gray-100 text-lg font-medium text-blue-500 group-hover:ring-2 group-hover:ring-blue-400">
+                      {preview ? (
+                        <img
+                          src={preview}
+                          alt="Profile"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        getInitials(formData.first_name, formData.last_name)
+                      )}
+                    </div>
+                    <span className="text-sm text-gray-500 dark:text-gray-400 mt-1 block text-center group-hover">
+                      Change Photo
+                    </span>
+                  </label>
+                  <input
+                    id="profile-pic-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                </div>
+
+                {/* Form Fields Grid */}
                 <div className="grid grid-cols-1 gap-x-4 gap-y-4 lg:grid-cols-2">
                   <div>
                     <Label>First Name</Label>
@@ -313,10 +386,10 @@ export default function DriverInfoCard() {
                       onChange={(e) => setFormData({ ...formData, mobile_number: e.target.value })}
                     />
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-2 text-center">
                     <Label>Gender</Label>
                     <select
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                      className="w-50 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
                       value={formData.gender || ''}
                       onChange={(e) => {
                         const newGender = e.target.value;
@@ -331,6 +404,7 @@ export default function DriverInfoCard() {
                     </select>
                   </div>
                 </div>
+
               </div>
             </div>
 
@@ -338,8 +412,8 @@ export default function DriverInfoCard() {
               <Button size="sm" variant="outline" onClick={closeModal}>
                 Close
               </Button>
-              <button type="button" className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700" 
-                  onClick={handleSave}>
+              <button type="button" className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
+                onClick={handleSave}>
                 Save Changes
               </button>
             </div>
@@ -434,7 +508,7 @@ export default function DriverInfoCard() {
                 Cancel
               </Button>
               <button type="button" className="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
-                 onClick={() => handleResetPassword()}>
+                onClick={() => handleResetPassword()}>
                 Submit
               </button>
             </div>

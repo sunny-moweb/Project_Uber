@@ -22,8 +22,13 @@ export default function DriverDropdown() {
     email: '',
     mobile_number: '',
     gender: '',
-    profile_pic: ''
+    profile_pic: '',
+    thumbnail_pic: ''
   });
+
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName.charAt(0).toUpperCase()}${lastName.charAt(0).toUpperCase()}`;
+  };
 
   //! Api for getting profile-info
   useEffect(() => {
@@ -43,10 +48,21 @@ export default function DriverDropdown() {
         className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400"
       >
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <img
-            src={profile.profile_pic}
-            alt="Profile"
-          />
+          <div
+            className="flex items-center justify-center bg-blue-light-200 text-white font-bold text-lg h-full w-full"
+          >
+            {profile.thumbnail_pic ? (
+              <img
+                src={profile.thumbnail_pic}
+                alt="User"
+                className="h-full w-full object-cover rounded-full"
+              />
+            ) : (
+              <div className="text-blue-500">
+                {getInitials(profile.first_name, profile.last_name)}
+              </div>
+            )}
+          </div>
         </span>
 
         <span className="block mr-1 font-medium text-theme-sm">{profile.first_name}{profile.last_name}</span>

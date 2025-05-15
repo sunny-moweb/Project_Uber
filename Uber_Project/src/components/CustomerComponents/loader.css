@@ -1,0 +1,32 @@
+.spinner-loader {
+  width: 50px;
+  height: 50px;
+  border: 5px solid transparent;
+  border-top: 5px solid #3498db;
+  border-radius: 50%;
+  animation: spin 1s linear infinite, colorChange 4s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes colorChange {
+  0% {
+    border-top-color: #3498db;
+  }
+  25% {
+    border-top-color: #e74c3c;
+  }
+  50% {
+    border-top-color: #f1c40f;
+  }
+  75% {
+    border-top-color: #2ecc71;
+  }
+  100% {
+    border-top-color: #3498db;
+  }
+}

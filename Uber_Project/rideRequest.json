@@ -1,0 +1,74 @@
+{
+  "rideRequests": [
+    {
+      "id": "81e8",
+      "pickup_location_latitude": "22.9986596",
+      "pickup_location_longitude": "72.6114013",
+      "pickup_location": "Maninagar, Lala Lajpat Rai Marg, Uttamnagar, Maninagar, Maninagar Taluka, Ahmedabad, Gujarat, 380008, India",
+      "drop_location_latitude": "22.9966938",
+      "drop_location_longitude": "72.5833917",
+      "drop_location": "DaniLimda, Maninagar Taluka, Ahmedabad, Gujarat, 380043, India",
+      "vehicle_type": "3 Wheeler",
+      "distance": 3.47,
+      "estimated_time": "5",
+      "fare": 39.7,
+      "isRead": true
+    },
+    {
+      "id": "abc6",
+      "pickup_location_latitude": "23.0204040",
+      "pickup_location_longitude": "72.5560590",
+      "pickup_location": "Parimal Garden, Ambawadi, SabarmatiTaluka, Ahmedabad, Gujarat, 380006, India",
+      "drop_location_latitude": "23.0246913",
+      "drop_location_longitude": "72.6031447",
+      "drop_location": "Kalupur Railway Station, Sarangpur railway station road, Sarangpur, Maninagar Taluka, Ahmedabad, Gujarat, 380021, India",
+      "vehicle_type": "2 Wheeler",
+      "distance": 7.62,
+      "estimated_time": "10",
+      "fare": 58.34,
+      "isRead": true
+    },
+    {
+      "id": "2dc9",
+      "pickup_location_latitude": "23.0246913",
+      "pickup_location_longitude": "72.6031447",
+      "pickup_location": "Kalupur Railway Station, Sarangpur railway station road, Sarangpur, Maninagar Taluka, Ahmedabad, Gujarat, 380021, India",
+      "drop_location_latitude": "23.0735173",
+      "drop_location_longitude": "72.6415892",
+      "drop_location": "Kuber nagar Main bazar, Naroda, Asarva Taluka, Ahmedabad, Gujarat, 382325, India",
+      "vehicle_type": "2 Wheeler",
+      "distance": 7.51,
+      "estimated_time": "9",
+      "fare": 57.57,
+      "isRead": true
+    },
+    {
+      "id": "282f",
+      "pickup_location_latitude": "22.9955398",
+      "pickup_location_longitude": "72.6107331",
+      "pickup_location": "Shree Swaminarayan Temple Gadi Sansthan, BRTS Route, Uttamnagar, Maninagar, Maninagar Taluka, Ahmedabad, Gujarat, 380008, India",
+      "drop_location_latitude": "23.0226117",
+      "drop_location_longitude": "72.5490834",
+      "drop_location": "Ambawadi, Ahmedabad, SabarmatiTaluka, Ahmedabad, Gujarat, 380007, India",
+      "vehicle_type": "2 Wheeler",
+      "distance": 9.12,
+      "estimated_time": "11",
+      "fare": 68.84,
+      "isRead": true
+    },
+    {
+      "id": "1033",
+      "pickup_location_latitude": "23.0226117",
+      "pickup_location_longitude": "72.5490834",
+      "pickup_location": "Ambawadi, Ahmedabad, SabarmatiTaluka, Ahmedabad, Gujarat, 380007, India",
+      "drop_location_latitude": "23.0804086",
+      "drop_location_longitude": "72.6340502",
+      "drop_location": "Ambavadi / kubernagar, Asarva Taluka, Ahmedabad, Gujarat, 382340, India",
+      "vehicle_type": "2 Wheeler",
+      "distance": 13.75,
+      "estimated_time": "16",
+      "fare": 101.25,
+      "isRead": true
+    }
+  ]
+}

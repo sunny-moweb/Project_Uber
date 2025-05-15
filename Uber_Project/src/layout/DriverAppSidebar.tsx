@@ -12,11 +12,10 @@ import {
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
-  PaperPlaneIcon,
-  TableIcon,
   UserCircleIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
+import { FaCar, FaSafari } from "react-icons/fa";
 // import SidebarWidget from "./SidebarWidget";
 
 type NavItem = {
@@ -39,7 +38,7 @@ const navItems: NavItem[] = [
   },
   {
     name: "Vehicles",
-    icon: <TableIcon />,
+    icon: <FaCar />,
     subItems: [
       { name: "Add Vehicle", path: "/vehicle-details", pro: false },
       { name: "Select Vehicle", path: "/select-vehicle", pro: false },
@@ -47,7 +46,7 @@ const navItems: NavItem[] = [
   },
   {
     name: "Rides",
-    icon: <PaperPlaneIcon />,
+    icon: <FaSafari />,
     subItems: [
       { name: "Ride Requests", path: "/ride-request", pro: false },
       { name: "404 Error", path: "/error-404", pro: false },

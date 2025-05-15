@@ -16,15 +16,15 @@ interface ProfileData {
   email: string;
   mobile_number: string;
   gender: string | null;
-  profile_pic: string | undefined;
+  profile_pic: string | File | undefined;
 }
 
 export default function CustomerInfoCard() {
 
   //* modal for profile edit
   const { isOpen, openModal, closeModal } = useModal();
+
   //* modal for Reset password
-  // const { isResetOpen, openResetModal, closeResetModal } = useModal();
   const {
     isOpen: isResetOpen,
     openModal: openResetModal,
@@ -34,6 +34,10 @@ export default function CustomerInfoCard() {
   const [showOldPassword, setShowOldPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
+
+  //* Loader
+  const { showLoader, hideLoader } = useLoader();
 
 
   //* Reset-password
@@ -46,8 +50,6 @@ export default function CustomerInfoCard() {
   //! Reset-password API
   const handleResetPassword = async () => {
     console.log("handleResetPassword triggered");
-    const token = localStorage.getItem("access_token");
-
     const { current_password, new_password, confirm_password } = resetFormData;
     if (new_password !== confirm_password) {
       toast.error("New password and confirm password do not match");
@@ -82,10 +84,6 @@ export default function CustomerInfoCard() {
     }
   };
 
-
-  //* Loader
-  const { showLoader, hideLoader } = useLoader();
-
   //* Profile data
   const [profile, setProfile] = useState({
     first_name: '',
@@ -97,13 +95,13 @@ export default function CustomerInfoCard() {
   });
 
   //* API Modal-Data
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProfileData>({
     first_name: "",
     last_name: "",
     email: "",
     mobile_number: "",
     gender: "",
-    profile_pic: "",
+    profile_pic: undefined,
   });
 
   //! Modal Data display API
@@ -118,6 +116,8 @@ export default function CustomerInfoCard() {
 
   const handleOpenModal = () => {
     openModal();
+    setFormData(profile); 
+    setPreview(profile.profile_pic);
     fetchProfileData();
   };
 
@@ -125,26 +125,17 @@ export default function CustomerInfoCard() {
     return `${firstName.charAt(0).toUpperCase()}${lastName.charAt(0).toUpperCase()}`;
   };
 
-  //! image-change function for modal
-  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; // Get the selected file
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
     if (file) {
-      setFormData((prev) => ({
-        ...prev,
-        profile_pic_file: file,
+      const imageUrl = URL.createObjectURL(file);
+      setFormData((prevData) => ({
+        ...prevData,
+        profile_pic: file,
       }));
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({
-          ...prev,
-          profile_pic: reader.result as string,
-        }));
-      };
-      reader.readAsDataURL(file);
+      setPreview(imageUrl);
     }
   };
-  
-
 
   //! API for update Profile
   const handleSave = async () => {
@@ -161,24 +152,26 @@ export default function CustomerInfoCard() {
       };
       // console.log("Payload being sent to API:", payload);
 
-      const response = await API.patch('/updateProfileView', payload);
+      const response = await API.patch('/updateProfileView', payload, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
       console.log("Updated Profile:", response.data);
       setTimeout(() => {
         toast.success("Profile updated successfully!");
         closeModal();
-      }, 1500);
+      }, 1000);
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error("Failed to update profile.");
     } finally {
       hideLoader();
     }
-  };
-
+  }; 
 
   //! Api for getting profile-info
   useEffect(() => {
-    const token = localStorage.getItem('access_token');
     API.get('/ProfileView')
       .then(res => {
         setProfile(res.data);
@@ -198,6 +191,26 @@ export default function CustomerInfoCard() {
           </h4>
 
           <div className="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-7 2xl:gap-x-32">
+            <div>
+              <p>Profile Image</p>
+              <div
+                className="flex items-center justify-center font-bold text-lg h-full w-full"
+              >
+                {profile.profile_pic ? (
+                  <img
+                    src={profile.profile_pic}
+                    alt="User"
+                    className="h-25 w-25 object-cover rounded-full"
+                  />
+                ) : (
+                  <div className="text-blue-500">
+                    {getInitials(profile.first_name, profile.last_name)}
+                  </div>
+                )}
+              </div>
+            </div>
+            <br />
+
             <div>
               <p className="mb-2 text-xs leading-normal text-black-500 dark:text-gray-400">
                 First Name
@@ -316,17 +329,17 @@ export default function CustomerInfoCard() {
                 <div className="flex flex-col items-center mb-6">
                   <label htmlFor="profile-pic-upload" className="cursor-pointer group">
                     <div className="h-24 w-24 rounded-full overflow-hidden border-2 border-gray-300 dark:border-gray-600 flex items-center justify-center bg-gray-100 text-lg font-medium text-blue-500 group-hover:ring-2 group-hover:ring-blue-400">
-                      {formData.profile_pic ? (
+                      {preview ? (
                         <img
-                          src={formData.profile_pic} // Base64 preview
+                          src={preview}
                           alt="Profile"
                           className="h-full w-full object-cover"
                         />
                       ) : (
-                        getInitials(formData.first_name, formData.last_name) // Show initials if no image
+                        getInitials(formData.first_name, formData.last_name)
                       )}
                     </div>
-                    <span className="text-sm text-gray-500 dark:text-gray-400 mt-1 block text-center group-hover:underline">
+                    <span className="text-sm text-gray-500 dark:text-gray-400 mt-1 block text-center group-hover">
                       Change Photo
                     </span>
                   </label>
@@ -334,11 +347,10 @@ export default function CustomerInfoCard() {
                     id="profile-pic-upload"
                     type="file"
                     accept="image/*"
+                    onChange={handleImageChange}
                     className="hidden"
-                    onChange={handleProfileImageChange}
                   />
                 </div>
-
 
                 {/* Form Fields Grid */}
                 <div className="grid grid-cols-1 gap-x-4 gap-y-4 lg:grid-cols-2">
@@ -374,10 +386,10 @@ export default function CustomerInfoCard() {
                       onChange={(e) => setFormData({ ...formData, mobile_number: e.target.value })}
                     />
                   </div>
-                  <div className="col-span-2">
+                  <div className="col-span-2 text-center">
                     <Label>Gender</Label>
                     <select
-                      className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
+                      className="w-50 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
                       value={formData.gender || ''}
                       onChange={(e) => {
                         const newGender = e.target.value;

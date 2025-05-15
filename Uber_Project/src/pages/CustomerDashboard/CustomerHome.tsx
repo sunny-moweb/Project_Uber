@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PageMeta from "../../components/common/PageMeta";
 import SearchBox from "../../components/CustomerComponents/SearchBox";
 import API from "../../components/auth/axiosInstance";
@@ -6,8 +6,11 @@ import { MdElectricRickshaw, MdElectricBike, MdDirectionsCarFilled } from "react
 import { useLoader } from "../../components/common/LoaderContext";
 import { toast, ToastContainer } from "react-toastify";
 import LocationMap from "../../components/common/LocationMap";
+import axios, { Axios } from "axios";
+import Loader from "../../components/CustomerComponents/Loader";
 
 interface FareDetails {
+    id:string;
     pickup_location: string;
     drop_location: string;
     distance: string | number;
@@ -26,6 +29,16 @@ export default function CustomerHome() {
     const [tripDetails, setTripDetails] = useState<FareDetails | null>(null);
     const [selectedVehicle, setSelectedVehicle] = useState<string>("");
     const [confirmedTrip, setConfirmedTrip] = useState<any>(null);
+
+    // ride cancelation-----------
+    const [showBookingLoader, setShowBookingLoader] = useState(false);
+    const [bookingCancelled, setBookingCancelled] = useState(false);
+
+    // Ride-cancel reson modal
+    const [showCancelModal, setShowCancelModal] = useState(false);
+    const [cancelReason, setCancelReason] = useState('');
+    const [customReason, setCustomReason] = useState('');
+
 
     //* Loader
     const { showLoader } = useLoader();
@@ -60,7 +73,9 @@ export default function CustomerHome() {
     //! API for Confirming trip------------------------------->
     const handleBookRide = async () => {
         if (from && to && selectedVehicle && tripDetails) {
-            showLoader()
+            // showLoader()
+            setBookingCancelled(false);
+            setShowBookingLoader(true);
             const vehicleTypeMap: Record<string, string> = {
                 "2 wheeler": "2 Wheeler",
                 "3 wheeler": "3 Wheeler",
@@ -96,10 +111,6 @@ export default function CustomerHome() {
                 console.log("Trip Booked-------", response.data);
                 setConfirmedTrip(response.data.data);
                 setSubmitted(true);
-                toast.loading("Waiting for Driver to accept ride......");
-                // setTimeout(() => {
-                //     window.location.reload()
-                // }, 1000);
             } catch (error) {
                 console.error('error booking trip:', error);
                 setSubmitted(false);
@@ -109,6 +120,26 @@ export default function CustomerHome() {
             }
         }
     }
+
+    const handleCancelBooking = (reason?: string) => {
+        console.log('Booking cancelled with reason:', reason);
+        // Call your API or perform cancel logic here
+    };
+
+
+    useEffect(() => {
+        if (showCancelModal) {
+            document.body.classList.add('overflow-hidden');
+        } else {
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        // Clean up on unmount
+        return () => {
+            document.body.classList.remove('overflow-hidden');
+        };
+    }, [showCancelModal]);
+
 
     const shortenLocation = (location?: string) => {
         if (!location) return "";
@@ -165,7 +196,7 @@ export default function CustomerHome() {
                             <div className="mt-3">
                                 <strong>Total Fare:</strong>
                                 <div className="mt-2 text-center ml-10">
-                                
+
                                     <label className="flex items-center mb-2">
                                         <input
                                             type="radio"
@@ -208,12 +239,84 @@ export default function CustomerHome() {
                                 {selectedVehicle && (
                                     <div className="mt-4 text-center">
                                         <button
-                                            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                            className={`px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 ${(!selectedVehicle || showBookingLoader) ? 'cursor-not-allowed opacity-50' : ''
+                                                }`}
                                             onClick={handleBookRide}
-                                            disabled={!selectedVehicle}
+                                            disabled={!selectedVehicle || showBookingLoader}
                                         >
                                             Book Ride
                                         </button>
+                                    </div>
+                                )}
+                                {showBookingLoader && (
+                                    <div className="mt-4 flex flex-col items-center">
+                                        <Loader />
+                                        <h3 className="text-green-400 font-medium">Waiting for Driver...</h3>
+                                        <button
+                                            onClick={() => setShowCancelModal(true)}
+                                            className="mt-3 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                        >
+                                            Cancel Ride
+                                        </button>
+                                    </div>
+                                )}
+
+                                {showCancelModal && (
+                                    <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50" style={{backgroundColor: 'rgba(0, 0, 0, 0.05)'}}>
+                                        <div className="bg-white p-6 rounded-md w-96">
+                                            <h2 className="text-lg font-semibold mb-4">Why are you cancelling?</h2>
+
+                                            {['Driver is late',
+                                                'Cant able to connect with driver',
+                                                'My pickup location was Incorrect',
+                                                'Driver told me to cancel',
+                                                'Other']
+                                                .map((reason) => (
+                                                    <div key={reason} className="mb-2">
+                                                        <label className="flex items-center space-x-2">
+                                                            <input
+                                                                type="radio"
+                                                                name="cancelReason"
+                                                                value={reason}
+                                                                checked={cancelReason === reason}
+                                                                onChange={(e) => setCancelReason(e.target.value)}
+                                                            />
+                                                            <span>{reason}</span>
+                                                        </label>
+                                                    </div>
+                                                ))}
+
+                                            {/* Show text field if "Other" is selected */}
+                                            {cancelReason === 'Other' && (
+                                                <textarea
+                                                    value={customReason}
+                                                    onChange={(e) => setCustomReason(e.target.value)}
+                                                    placeholder="Enter your reason..."
+                                                    className="mt-2 w-full p-2 border rounded"
+                                                    rows={3}
+                                                />
+                                            )}
+
+                                            <div className="mt-4 flex justify-end gap-2">
+                                                <button
+                                                    onClick={() => setShowCancelModal(false)}
+                                                    className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+                                                >
+                                                    Close
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        const reasonToSend = cancelReason === 'Other' ? customReason : cancelReason;
+                                                        handleCancelBooking(reasonToSend);
+                                                        setShowCancelModal(false);
+                                                    }}
+                                                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                                    disabled={!cancelReason || (cancelReason === 'Other' && !customReason)}
+                                                >
+                                                    Confirm Cancel
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 )}
                             </div>

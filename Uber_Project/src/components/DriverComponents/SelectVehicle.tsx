@@ -9,7 +9,8 @@ interface Vehicle {
   id: number;
   vehicle_number: string | number;
   vehicle_type: string;
-  vehicle_image?: string;
+  vehicle_front_image?: string;
+  selected?: boolean;
 }
 
 const SelectVehicle = () => {
@@ -22,7 +23,18 @@ const SelectVehicle = () => {
     const fetchVehicles = async () => {
       try {
         const response = await API.get("/driverVehiclesListView");
-        setVehicles(response.data);
+        console.log(response, "response")
+        const vehicleList = response.data.data.data;
+        console.log(vehicleList, "vehicleghtrgv");
+        
+        setVehicles(vehicleList);
+        
+        // Find the vehicle which has `selected: true`
+        const selectedVehicle = vehicleList.find((vehicle: Vehicle) => vehicle.selected);
+        // const selectedVehicle = vehicleList.find(((v: Vehicle)) => v.selected);
+        if (selectedVehicle) {
+          setSelectedVehicleId(selectedVehicle.id);
+        }
       } catch (error) {
         toast.error("Failed to fetch vehicles.");
         console.error("Error fetching vehicle list:", error);
@@ -31,7 +43,7 @@ const SelectVehicle = () => {
     fetchVehicles();
   }, []);
 
-  // API for vehicle-selection
+  //* API for vehicle-selection----------------------->
   const handleVehicleSelect = async (id: number) => {
     setSelectedVehicleId(id);
     try {
@@ -50,14 +62,13 @@ const SelectVehicle = () => {
         description="This is React.js Driver vehicle select Dashboard"
       />
       <PageBreadcrumb pageTitle="Driver Select Vehicle" />
-        <ToastContainer position="bottom-right" autoClose={1500} hideProgressBar />
+      <ToastContainer position="bottom-right" autoClose={1500} hideProgressBar />
       <div className="p-6">
-        {vehicles.map((vehicle) => (
+        {Array.isArray(vehicles) && vehicles.map((vehicle) => (
           <label
             key={vehicle.id}
-            className={`bg-white shadow rounded-lg p-6 mb-4 border-2 flex items-center gap-6 cursor-pointer transition-all ${
-              selectedVehicleId === vehicle.id ? "border-blue-500 bg-blue-50" : "border-gray-200"
-            }`}
+            className={`bg-white shadow rounded-lg p-6 mb-4 border-2 flex items-center gap-6 cursor-pointer transition-all ${selectedVehicleId === vehicle.id ? "border-blue-500 bg-blue-50" : "border-gray-200"
+              }`}
           >
             <input
               type="radio"
@@ -68,9 +79,9 @@ const SelectVehicle = () => {
               className="accent-blue-500 w-5 h-5"
             />
 
-            {vehicle.vehicle_image ? (
+            {vehicle.vehicle_front_image ? (
               <img
-                src={vehicle.vehicle_image}
+                src={vehicle.vehicle_front_image}
                 alt="Vehicle"
                 className="w-20 h-20 rounded-full object-cover border"
               />
