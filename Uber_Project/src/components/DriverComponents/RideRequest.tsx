@@ -12,7 +12,7 @@ interface RideData {
   pickup_location: string;
   drop_location: string;
   vehicle_type: string | number;
-  fare: number|string;
+  fare: number | string;
   distance: string;
   status: "pending" | "approved" | "rejected";
 }
@@ -23,48 +23,41 @@ interface RideRequestProps {
 
 const RideRequest = () => {
   const [rides, setRides] = useState<RideData[]>([]);
+  const [rideRequests, setRideRequests] = useState<RideData[]>([]);
+
 
   // Fetch ride requests
-  useEffect(() => {
-    const fetchRides = async () => {
-      try {
-        const response = await API.get("/driverTripPendingView");
-        setRides(response.data);
-      } catch (error) {
-        toast.error("Failed to fetch ride requests.");
-        console.error("Error fetching rides:", error);
+  // useEffect(() => {
+  //   const fetchRides = async () => {
+  //     try {
+  //       const response = await API.get("/driverTripPendingView");
+  //       setRides(response.data);
+  //     } catch (error) {
+  //       toast.error("Failed to fetch ride requests.");
+  //       console.error("Error fetching rides:", error);
+  //     }
+  //   };
+  //   fetchRides();
+  // }, []);
+
+  //* Ride-Approval API----------------------------------->
+  const handleApprove = async (rideId: number) => {
+    try {
+      const res = await API.patch(`/tripApprovalView/${rideId}`);
+      if (res.status === 200) {
+        // Update the status of the ride in the local state
+        setRideRequests((prev) =>
+          prev.map((ride) =>
+            ride.id === rideId ? { ...ride, status: "approved" } : ride
+          )
+        );
+        toast.success("Trip approved successfully");
       }
-    };
-    fetchRides();
-  }, []);
-
-  //   const handleApprove = async (id: number) => {
-  //     try {
-  //       await API.patch(`/rideRequests/${id}/approve`);
-  //       toast.success("Ride approved!");
-  //       setRides((prev) =>
-  //         prev.map((ride) =>
-  //           ride.id === id ? { ...ride, status: "approved" } : ride
-  //         )
-  //       );
-  //     } catch (error) {
-  //       toast.error("Failed to approve ride.");
-  //     }
-  //   };
-
-  //   const handleReject = async (id: number) => {
-  //     try {
-  //       await API.patch(`/rideRequests/${id}/reject`);
-  //       toast.info("Ride rejected.");
-  //       setRides((prev) =>
-  //         prev.map((ride) =>
-  //           ride.id === id ? { ...ride, status: "rejected" } : ride
-  //         )
-  //       );
-  //     } catch (error) {
-  //       toast.error("Failed to reject ride.");
-  //     }
-  //   };
+    } catch (error) {
+      console.error("Error approving trip:", error);
+      toast.error("Failed to approve trip");
+    }
+  };
 
   return (
     <>
@@ -78,10 +71,10 @@ const RideRequest = () => {
             <div
               key={ride.id}
               className={`bg-white shadow rounded-lg p-6 mb-4 border-2 transition-all ${ride.status === "approved"
-                  ? "border-green-500 bg-green-50"
-                  : ride.status === "rejected"
-                    ? "border-red-400 bg-red-50"
-                    : "border-gray-200"
+                ? "border-green-500 bg-green-50"
+                : ride.status === "rejected"
+                  ? "border-red-400 bg-red-50"
+                  : "border-gray-200"
                 }`}
             >
               <div className="mb-4">
@@ -99,43 +92,31 @@ const RideRequest = () => {
 
               <div className="flex gap-4">
                 <button
-                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
-                  onClick={async () => {
-                    try {
-                      await API.patch(`/rideRequests/${ride.id}/approve`);
-                      toast.success("Ride approved!");
-                      setRides((prev) =>
-                        prev.map((r) =>
-                          r.id === ride.id ? { ...r, status: "approved" } : r
-                        )
-                      );
-                    } catch (error) {
-                      toast.error("Failed to approve ride.");
-                    }
-                  }}
-                  disabled={ride.status !== "pending"}
+                  className={`px-4 py-2 rounded text-white ${ride.status === "approved" ? "bg-green-300 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"}`}
+                  onClick={() => handleApprove(ride.id)}
+                // disabled={ride.status !== "pending"}
                 >
                   Approve
-                </button>
-                <button
-                  className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
-                  onClick={async () => {
-                    try {
-                      await API.patch(`/rideRequests/${ride.id}/reject`);
-                      toast.info("Ride rejected.");
-                      setRides((prev) =>
-                        prev.map((r) =>
-                          r.id === ride.id ? { ...r, status: "rejected" } : r
-                        )
-                      );
-                    } catch (error) {
-                      toast.error("Failed to reject ride.");
-                    }
-                  }}
-                  disabled={ride.status !== "pending"}
-                >
-                  Reject
-                </button>
+                  </button>
+                  <button
+                    className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
+                    onClick={async () => {
+                      try {
+                        await API.patch(`/rideRequests/${ride.id}/reject`);
+                        toast.info("Ride rejected.");
+                        setRides((prev) =>
+                          prev.map((r) =>
+                            r.id === ride.id ? { ...r, status: "rejected" } : r
+                          )
+                        );
+                      } catch (error) {
+                        toast.error("Failed to reject ride.");
+                      }
+                    }}
+                    disabled={ride.status !== "pending"}
+                  >
+                    Reject
+                  </button>
               </div>
             </div>
           ))

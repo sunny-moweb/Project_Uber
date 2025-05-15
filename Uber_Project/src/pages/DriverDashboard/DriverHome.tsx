@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { toast } from "react-toastify";
 import RideRequest from "../../components/DriverComponents/RideRequest";
 import { connectWebSocket } from "../../components/auth/WebSocket";
+import API from "../../components/auth/axiosInstance";
 
 interface RideData {
   id: number;
@@ -37,23 +38,37 @@ export default function DriverHome() {
     socket.onmessage = (event) => {
       try {
         const response = JSON.parse(event.data);
+        const data: RideData = response.data;
 
-        if (response.status === "New trip available") {
-          const data: RideData = response.data;
-
+        if (response.event === "send_trip_update") {
           setRideRequests((prev) => [data, ...prev]);
-
-          toast.info(`New Trip: ${data.distance} | Fare: ${data.fare}`, {
-            position: "top-right",
-            autoClose: 5000,
-          });
-
-          console.log("📩 Trip data received:", data);
+          // console.log("Trip data received:", data);
+        } else if (response.event === "remove_trip_update") {
+          setRideRequests((prev) => prev.filter((ride) => ride.id !== data.id));
+          // console.log(`Trip removed with ID: ${data.id}`);
         }
       } catch (err) {
         console.error("❌ Failed to parse WebSocket message:", err);
       }
     };
+
+    // socket.onmessage = (event) => {
+    //   try {
+    //     const response = JSON.parse(event.data);
+
+    //     if (response.event === "send_trip_update") {
+    //       const data: RideData = response.data;
+    //       setRideRequests((prev) => [data, ...prev]);
+    //       // toast.info(`New Trip: ${data.distance} | Fare: ${data.fare}`, {
+    //       //   position: "top-right",
+    //       //   autoClose: 5000,
+    //       // });
+    //       console.log("📩 Trip data received:", data);
+    //     }else(response.event==="remove_trip_update")
+    //   } catch (err) {
+    //     console.error("❌ Failed to parse WebSocket message:", err);
+    //   }
+    // };
 
     socket.onerror = (err) => {
       console.error("❌ WebSocket error:", err);
@@ -67,6 +82,26 @@ export default function DriverHome() {
       socket.close();
     };
   }, []);
+
+  //* Ride-Approval API----------------------------------->
+  const handleApprove = async (rideId: number) => {
+    try {
+      const res = await API.patch(`/tripApprovalView/${rideId}`);
+      if (res.status === 200) {
+        // Update the status of the ride in the local state
+        setRideRequests((prev) =>
+          prev.map((ride) =>
+            ride.id === rideId ? { ...ride, status: "approved" } : ride
+          )
+        );
+        toast.success("Trip approved successfully");
+      }
+    } catch (error) {
+      console.error("Error approving trip:", error);
+      toast.error("Failed to approve trip");
+    }
+  };
+
 
   return (
     <>
@@ -82,12 +117,12 @@ export default function DriverHome() {
               rideRequests.map((ride, index) => (
                 <div
                   key={ride.id}
-                className={`bg-white shadow rounded-lg p-6 mb-4 border-2 transition-all ${ride.status === "approved"
-                  ? "border-green-500 bg-green-50"
-                  : ride.status === "rejected"
-                    ? "border-red-400 bg-red-50"
-                    : "border-gray-200"
-                  }`}
+                  className={`bg-white shadow rounded-lg p-6 mb-4 border-2 transition-all ${ride.status === "approved"
+                    ? "border-green-500 bg-green-50"
+                    : ride.status === "rejected"
+                      ? "border-red-400 bg-red-50"
+                      : "border-gray-200"
+                    }`}
                 >
                   <h2 className="text-lg font-semibold">🚗 New Ride Request #{index + 1}</h2>
                   <div className="mb-4">
@@ -105,7 +140,8 @@ export default function DriverHome() {
 
                   <div className="flex gap-4">
                     <button
-                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded"
+                      className={`px-4 py-2 rounded text-white ${ride.status === "approved" ? "bg-green-300 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"}`}
+                      onClick={() => handleApprove(ride.id)}
                     // disabled={ride.status !== "pending"}
                     >
                       Approve
@@ -126,7 +162,7 @@ export default function DriverHome() {
             <RideRequest />
           </div>
         </div>
-        
+
         <div className="col-span-12 xl:col-span-5"></div>
         <div className="col-span-12"></div>
         <div className="col-span-12 xl:col-span-5"></div>

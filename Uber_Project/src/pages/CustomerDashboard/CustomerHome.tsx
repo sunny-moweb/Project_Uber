@@ -10,7 +10,7 @@ import axios, { Axios } from "axios";
 import Loader from "../../components/CustomerComponents/Loader";
 
 interface FareDetails {
-    id:string;
+    id: string;
     pickup_location: string;
     drop_location: string;
     distance: string | number;
@@ -38,6 +38,7 @@ export default function CustomerHome() {
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
     const [customReason, setCustomReason] = useState('');
+
 
 
     //* Loader
@@ -107,10 +108,17 @@ export default function CustomerHome() {
                 fare: fare
             };
             try {
+                // const riderequest = await axios.post('http://localhost:3001/rideRequests', payload);
+                // console.log("Ride Request Sent to json-server:", riderequest.data);
+
                 const response = await API.post("/addTripDetails", payload);
                 console.log("Trip Booked-------", response.data);
                 setConfirmedTrip(response.data.data);
                 setSubmitted(true);
+                // toast.loading("Waiting for Driver to accept ride......");
+                // setTimeout(() => {
+                //     window.location.reload()
+                // }, 1000);
             } catch (error) {
                 console.error('error booking trip:', error);
                 setSubmitted(false);
@@ -121,9 +129,40 @@ export default function CustomerHome() {
         }
     }
 
-    const handleCancelBooking = (reason?: string) => {
-        console.log('Booking cancelled with reason:', reason);
-        // Call your API or perform cancel logic here
+
+    // const handleCancelBooking = (reason?: string) => {
+    //     setBookingCancelled(true);
+    //     setShowBookingLoader(false);
+    //     console.log('Booking cancelled with reason:', reason);
+    //     // Call your API or perform cancel logic here
+    // };
+
+    //* Ride cancellation API----------------------------------->
+    const handleCancelBooking = async (reason?: string) => {
+        const description = cancelReason === 'Other' ? customReason : cancelReason;
+        if (!description) {
+            toast.warning("Please provide a cancellation reason.");
+            return;
+        }
+
+        try {
+            setShowBookingLoader(true);
+            const response = await API.patch(`/tripCancelView/${confirmedTrip.id}`, {
+                description: description
+            });
+
+            // condition
+            console.log("Ride cancelled:", response.data);
+            toast.success("Ride cancelled successfully!");
+            setBookingCancelled(true);
+            setConfirmedTrip(null);
+            setShowCancelModal(false);
+        } catch (error) {
+            console.error("Error cancelling ride:", error);
+            toast.error("Failed to cancel ride.");
+        } finally {
+            setShowBookingLoader(false);
+        }
     };
 
 
@@ -139,6 +178,7 @@ export default function CustomerHome() {
             document.body.classList.remove('overflow-hidden');
         };
     }, [showCancelModal]);
+
 
 
     const shortenLocation = (location?: string) => {
@@ -262,7 +302,7 @@ export default function CustomerHome() {
                                 )}
 
                                 {showCancelModal && (
-                                    <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50" style={{backgroundColor: 'rgba(0, 0, 0, 0.05)'}}>
+                                    <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50" style={{ backgroundColor: 'rgba(0, 0, 0, 0.05)' }}>
                                         <div className="bg-white p-6 rounded-md w-96">
                                             <h2 className="text-lg font-semibold mb-4">Why are you cancelling?</h2>
 
