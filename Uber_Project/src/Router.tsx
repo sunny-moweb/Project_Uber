@@ -25,6 +25,7 @@ import DriverProfile from "./components/DriverComponents/DriverProfile";
 // Customer Pages--------------------------------------------------------------------
 import CustomerHome from "./pages/CustomerDashboard/CustomerHome";
 import CustomerProfile from "./components/CustomerComponents/CustomerProfile";
+import RideStatus from "./components/CustomerComponents/RideStatus";
 
 
 // Auth Pages
@@ -132,6 +133,7 @@ export default function Router() {
                 <Route element={<CustomerRoute allowedRoles={['customer']}/>}>
                     <Route path="/customer/home" element={<CustomerHome/>}/>
                     <Route path="/customer/profile" element={<CustomerProfile />} />
+                    <Route path="/ride-status" element={<RideStatus />} />
                 </Route>
             </Route>
 

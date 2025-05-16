@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PageMeta from "../../components/common/PageMeta";
 import SearchBox from "../../components/CustomerComponents/SearchBox";
 import API from "../../components/auth/axiosInstance";
@@ -6,8 +6,8 @@ import { MdElectricRickshaw, MdElectricBike, MdDirectionsCarFilled } from "react
 import { useLoader } from "../../components/common/LoaderContext";
 import { toast, ToastContainer } from "react-toastify";
 import LocationMap from "../../components/common/LocationMap";
-import axios, { Axios } from "axios";
 import Loader from "../../components/CustomerComponents/Loader";
+import { connectWebSocket } from "../../components/auth/WebSocket";
 
 interface FareDetails {
     id: string;
@@ -30,15 +30,59 @@ export default function CustomerHome() {
     const [selectedVehicle, setSelectedVehicle] = useState<string>("");
     const [confirmedTrip, setConfirmedTrip] = useState<any>(null);
 
-    // ride cancelation-----------
+    //* ride cancelation-----------
     const [showBookingLoader, setShowBookingLoader] = useState(false);
     const [bookingCancelled, setBookingCancelled] = useState(false);
-
-    // Ride-cancel reson modal
+    const [countdown, setCountdown] = useState(10); //300= 5minutes,
+    const [showAutoCancelModal, setShowAutoCancelModal] = useState(false);
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
     const [customReason, setCustomReason] = useState('');
 
+    //* Web-socket usage----------------
+    const socketRef = useRef<WebSocket | null>(null);
+
+    //* Web-socket connection usage--------------------------------->
+    useEffect(() => {
+        const socket = connectWebSocket();
+        if (!socket) return;
+
+        socketRef.current = socket;
+
+        socket.onopen = () => {
+            console.log("✅ WebSocket connected");
+        };
+
+        //* Ride Approval process----------------
+        // socket.onmessage = (event) => {
+        //     try {
+        //         const response = JSON.parse(event.data);
+        //         const data: RideData = response.data;
+
+        //         if (response.event === "send_trip_update") {
+        //             setRideRequests((prev) => [data, ...prev]);
+        //             // console.log("Trip data received:", data);
+        //         } else if (response.event === "remove_trip_update") {
+        //             setRideRequests((prev) => prev.filter((ride) => ride.id !== data.id));
+        //             // console.log(`Trip removed with ID: ${data.id}`);
+        //         }
+        //     } catch (err) {
+        //         console.error("❌ Failed to parse WebSocket message:", err);
+        //     }
+        // };
+
+        socket.onerror = (err) => {
+            console.error("❌ WebSocket error:", err);
+        };
+
+        socket.onclose = (e) => {
+            console.warn("⚠️ WebSocket closed:", e.code, e.reason);
+        };
+
+        return () => {
+            socket.close();
+        };
+    }, []);
 
 
     //* Loader
@@ -129,17 +173,51 @@ export default function CustomerHome() {
         }
     }
 
+    //* Countdown-timer for ride auto-cancel----------------------------------->
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (showBookingLoader) {
+            setCountdown(10); //300= 5 minutes, 10 = 10 seconds
+            timer = setInterval(() => {
+                setCountdown((prev) => {
+                    if (prev <= 1) {
+                        clearInterval(timer);
 
-    // const handleCancelBooking = (reason?: string) => {
-    //     setBookingCancelled(true);
-    //     setShowBookingLoader(false);
-    //     console.log('Booking cancelled with reason:', reason);
-    //     // Call your API or perform cancel logic here
-    // };
+                        // 👇 Only trigger if confirmedTrip exists
+                        if (confirmedTrip && confirmedTrip.id) {
+                            handleCancelBooking(undefined, "auto");
+                        } else {
+                            console.warn("Confirmed trip is not ready yet for auto cancel.");
+                        }
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
+
+        return () => clearInterval(timer);
+    }, [showBookingLoader, confirmedTrip]);
+
+    const formatTime = (seconds: number) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    };
+
+    //* for handling Auto-cancel ride functionality
+    // if (!confirmedTrip || !confirmedTrip.id) {
+    //     console.warn("Confirmed trip is not ready yet for auto cancel.");
+    //     return;
+    // }
 
     //* Ride cancellation API----------------------------------->
-    const handleCancelBooking = async (reason?: string) => {
-        const description = cancelReason === 'Other' ? customReason : cancelReason;
+    const handleCancelBooking = async (reason?: string, cancelBy?: "auto") => {
+        const description = cancelBy === "auto"
+            ? "Auto-cancelled after waiting for 5 minutes"
+            : (cancelReason === 'Other' ? customReason : cancelReason);
+
+
         if (!description) {
             toast.warning("Please provide a cancellation reason.");
             return;
@@ -148,12 +226,17 @@ export default function CustomerHome() {
         try {
             setShowBookingLoader(true);
             const response = await API.patch(`/tripCancelView/${confirmedTrip.id}`, {
-                description: description
+                description: description,
+                cancel_by: cancelBy
             });
 
             // condition
             console.log("Ride cancelled:", response.data);
-            toast.success("Ride cancelled successfully!");
+            if (cancelBy === "auto") {
+                setShowAutoCancelModal(true);
+            } else {
+                toast.success("Ride cancelled successfully!");
+            }
             setBookingCancelled(true);
             setConfirmedTrip(null);
             setShowCancelModal(false);
@@ -166,19 +249,17 @@ export default function CustomerHome() {
     };
 
 
+    //! Using to stop scroll when modal appears
     useEffect(() => {
         if (showCancelModal) {
             document.body.classList.add('overflow-hidden');
         } else {
             document.body.classList.remove('overflow-hidden');
         }
-
-        // Clean up on unmount
         return () => {
             document.body.classList.remove('overflow-hidden');
         };
-    }, [showCancelModal]);
-
+    }, [showCancelModal, showAutoCancelModal]);
 
 
     const shortenLocation = (location?: string) => {
@@ -291,7 +372,8 @@ export default function CustomerHome() {
                                 {showBookingLoader && (
                                     <div className="mt-4 flex flex-col items-center">
                                         <Loader />
-                                        <h3 className="text-green-400 font-medium">Waiting for Driver...</h3>
+                                        <h3 className="text-green-400 font-medium">Waiting for Driver: {formatTime(countdown)}</h3>
+                                        {/* <p className="text-black mt-2">Auto-cancel in: {formatTime(countdown)}</p> */}
                                         <button
                                             onClick={() => setShowCancelModal(true)}
                                             className="mt-3 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
@@ -301,6 +383,7 @@ export default function CustomerHome() {
                                     </div>
                                 )}
 
+                                {/* showing modal for cancel ride reason */}
                                 {showCancelModal && (
                                     <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50" style={{ backgroundColor: 'rgba(0, 0, 0, 0.05)' }}>
                                         <div className="bg-white p-6 rounded-md w-96">
@@ -325,8 +408,7 @@ export default function CustomerHome() {
                                                         </label>
                                                     </div>
                                                 ))}
-
-                                            {/* Show text field if "Other" is selected */}
+                                            {/* Showing text-field if "Other-option" is selected */}
                                             {cancelReason === 'Other' && (
                                                 <textarea
                                                     value={customReason}
@@ -336,7 +418,6 @@ export default function CustomerHome() {
                                                     rows={3}
                                                 />
                                             )}
-
                                             <div className="mt-4 flex justify-end gap-2">
                                                 <button
                                                     onClick={() => setShowCancelModal(false)}
@@ -359,6 +440,44 @@ export default function CustomerHome() {
                                         </div>
                                     </div>
                                 )}
+
+                                {/* showing Modal after driveris not available or no response */}
+                                {showAutoCancelModal && (
+                                    <div className="fixed inset-0 bg-white bg-opacity-20 backdrop-blur-sm flex items-center justify-center z-30">
+                                        <div className="bg-white bg-opacity-90 backdrop-filter backdrop-blur-md p-6 rounded-lg shadow-lg w-80 text-center">
+                                            <h2 className="text-lg font-semibold mb-4 text-gray-800">
+                                                Sorry, no rider available...
+                                            </h2>
+                                            <div className="flex justify-between">
+                                                <button
+                                                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 w-full mr-2"
+                                                    onClick={() => {
+                                                        setShowAutoCancelModal(false);
+                                                        handleBookRide();
+                                                        setShowBookingLoader(true);
+                                                    }}
+                                                >
+                                                    Retry
+                                                </button>
+                                                <button
+                                                    className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400 w-full ml-2"
+                                                    onClick={() => {
+                                                        setShowAutoCancelModal(false);
+                                                        // setFrom(null);
+                                                        // setTo(null);
+                                                        setTripDetails(null);
+                                                        setSelectedVehicle("");
+                                                        setSubmitted(false);
+                                                        setConfirmedTrip(null);
+                                                    }}
+                                                >
+                                                    Cancel Ride
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                             </div>
                         </div>
                     )}

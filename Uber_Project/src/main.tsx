@@ -8,6 +8,7 @@ import { AppWrapper } from "./components/common/PageMeta.tsx";
 import { ThemeProvider } from "./context/ThemeContext.tsx";
 import { BrowserRouter } from "react-router-dom";
 import { LoaderProvider } from "./components/common/LoaderContext.tsx";
+//* css for map display
 import 'leaflet/dist/leaflet.css';
 
 
