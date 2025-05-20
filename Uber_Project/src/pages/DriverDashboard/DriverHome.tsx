@@ -4,6 +4,9 @@ import { toast } from "react-toastify";
 import RideRequest from "../../components/DriverComponents/RideRequest";
 import { connectWebSocket } from "../../components/auth/WebSocket";
 import API from "../../components/auth/axiosInstance";
+//* using driver-location component
+import useDriverLocation from "../../components/DriverComponents/DriverLocation";
+import { useNavigate } from "react-router-dom";
 
 interface RideData {
   id: number;
@@ -20,8 +23,11 @@ interface RideData {
 export default function DriverHome() {
   // const [newRideRequest, setNewRideRequest] = useState<RideData | null>(null);
   const [rideRequests, setRideRequests] = useState<RideData[]>([]);
-  const [rides, setRides] = useState<RideData[]>([]);
   const socketRef = useRef<WebSocket | null>(null);
+  const navigate = useNavigate();
+
+  //* getting driver loaction and storing----------------
+  const { getLatitude, getLongitude } = useDriverLocation();
 
   //* Web-socket connection usage--------------------------------->
   useEffect(() => {
@@ -34,7 +40,6 @@ export default function DriverHome() {
       console.log("✅ WebSocket connected");
     };
 
-    //* New ride-request show----------------
     socket.onmessage = (event) => {
       try {
         const response = JSON.parse(event.data);
@@ -42,36 +47,16 @@ export default function DriverHome() {
 
         if (response.event === "send_trip_update") {
           setRideRequests((prev) => [data, ...prev]);
-          // console.log("Trip data received:", data);
         } else if (response.event === "remove_trip_update") {
           setRideRequests((prev) => prev.filter((ride) => ride.id !== data.id));
-          // console.log(`Trip removed with ID: ${data.id}`);
         }
       } catch (err) {
-        console.error("❌ Failed to parse WebSocket message:", err);
+        console.error("Failed to parse WebSocket message:", err);
       }
     };
 
-    // socket.onmessage = (event) => {
-    //   try {
-    //     const response = JSON.parse(event.data);
-
-    //     if (response.event === "send_trip_update") {
-    //       const data: RideData = response.data;
-    //       setRideRequests((prev) => [data, ...prev]);
-    //       // toast.info(`New Trip: ${data.distance} | Fare: ${data.fare}`, {
-    //       //   position: "top-right",
-    //       //   autoClose: 5000,
-    //       // });
-    //       console.log("📩 Trip data received:", data);
-    //     }else(response.event==="remove_trip_update")
-    //   } catch (err) {
-    //     console.error("❌ Failed to parse WebSocket message:", err);
-    //   }
-    // };
-
     socket.onerror = (err) => {
-      console.error("❌ WebSocket error:", err);
+      console.error("WebSocket error:", err);
     };
 
     socket.onclose = (e) => {
@@ -83,18 +68,43 @@ export default function DriverHome() {
     };
   }, []);
 
+
   //* Ride-Approval API----------------------------------->
   const handleApprove = async (rideId: number) => {
     try {
       const res = await API.patch(`/tripApprovalView/${rideId}`);
       if (res.status === 200) {
-        // Update the status of the ride in the local state
         setRideRequests((prev) =>
           prev.map((ride) =>
             ride.id === rideId ? { ...ride, status: "approved" } : ride
           )
         );
         toast.success("Trip approved successfully");
+
+        //* sending lat-long of driver----------------
+        const latitude = getLatitude();
+        const longitude = getLongitude();
+
+        if (latitude && longitude && socketRef.current) {
+          const locationPayload = {
+            type: "receive_location_update",
+            status: "success",
+            location: "pickup_location",
+            data: {
+              trip_id: rideId,
+              lat: latitude.toString(),
+              long: longitude.toString(),
+            },
+          };
+
+          socketRef.current.send(JSON.stringify(locationPayload));
+          console.log("Location sent after approval:", locationPayload);
+          // setTimeout(() => {
+          //   navigate('/driver-ride-status',{state:{locationPayload}});
+          // }, 500);
+        } else {
+          console.warn("Location or WebSocket not ready");
+        }
       }
     } catch (error) {
       console.error("Error approving trip:", error);
@@ -124,7 +134,7 @@ export default function DriverHome() {
                       : "border-gray-200"
                     }`}
                 >
-                  <h2 className="text-lg font-semibold">🚗 New Ride Request #{index + 1}</h2>
+                  <h2 className="text-lg font-semibold">🛣️ New Ride Request #{index + 1}</h2>
                   <div className="mb-4">
                     <p className="text-gray-800">
                       Customer: <span className="text-blue-600">{ride.first_name}{ride.last_name}</span>

@@ -21,6 +21,7 @@ import DriverHome from "./pages/DriverDashboard/DriverHome";
 import VehicleInfo from "./components/DriverComponents/VehicleInfo";
 import RideRequest from "./components/DriverComponents/RideRequest";
 import DriverProfile from "./components/DriverComponents/DriverProfile";
+import DriverRideStatus from "./components/DriverComponents/DriverRideStatus";
 
 // Customer Pages--------------------------------------------------------------------
 import CustomerHome from "./pages/CustomerDashboard/CustomerHome";
@@ -119,6 +120,7 @@ export default function Router() {
                     <Route path="/select-vehicle" element={<SelectVehicle />} />
                     <Route path="/ride-request" element={<RideRequest />} />
                     <Route path="/driver/profile" element={<DriverProfile />} />
+                    <Route path="/driver-ride-status" element={<DriverRideStatus />} />
                 </Route>
             </Route>
 

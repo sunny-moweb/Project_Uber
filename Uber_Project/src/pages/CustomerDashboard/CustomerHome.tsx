@@ -13,6 +13,7 @@ interface FareDetails {
     id: string;
     pickup_location: string;
     drop_location: string;
+    durations: string | number;
     distance: string | number;
     estimated_time: string | number;
     total_fare: {
@@ -20,6 +21,18 @@ interface FareDetails {
         '3 wheeler': number;
         '4 wheeler': number;
     };
+}
+
+interface RideData {
+    distance: string | number;
+    driver_name: string;
+    drop_location: string;
+    pickup_location: string;
+    durations: string | number;
+    estimated_time: string | number;
+    image?: string;
+    otp: number;
+    total_fare: number;
 }
 
 export default function CustomerHome() {
@@ -33,11 +46,14 @@ export default function CustomerHome() {
     //* ride cancelation-----------
     const [showBookingLoader, setShowBookingLoader] = useState(false);
     const [bookingCancelled, setBookingCancelled] = useState(false);
-    const [countdown, setCountdown] = useState(10); //300= 5minutes,
+    const [countdown, setCountdown] = useState(300); //300= 5minutes,
     const [showAutoCancelModal, setShowAutoCancelModal] = useState(false);
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
     const [customReason, setCustomReason] = useState('');
+
+    //* state for handling Socket-Response--------------->  
+    const [rideRequests, setRideRequests] = useState<RideData[]>([]);
 
     //* Web-socket usage----------------
     const socketRef = useRef<WebSocket | null>(null);
@@ -54,25 +70,26 @@ export default function CustomerHome() {
         };
 
         //* Ride Approval process----------------
-        // socket.onmessage = (event) => {
-        //     try {
-        //         const response = JSON.parse(event.data);
-        //         const data: RideData = response.data;
+        socket.onmessage = (event) => {
+            try {
+                const response = JSON.parse(event.data);
+                const data: RideData = response.data;
 
-        //         if (response.event === "send_trip_update") {
-        //             setRideRequests((prev) => [data, ...prev]);
-        //             // console.log("Trip data received:", data);
-        //         } else if (response.event === "remove_trip_update") {
-        //             setRideRequests((prev) => prev.filter((ride) => ride.id !== data.id));
-        //             // console.log(`Trip removed with ID: ${data.id}`);
-        //         }
-        //     } catch (err) {
-        //         console.error("❌ Failed to parse WebSocket message:", err);
-        //     }
-        // };
+                if (response.event === "location_update") {
+                    setRideRequests((prev) => [data, ...prev]);
+
+                    setCountdown(0);
+                    setShowCancelModal(false);
+                    setShowBookingLoader(false);
+                    // console.log("Trip data received:", data);
+                }
+            } catch (err) {
+                console.error("Failed to parse WebSocket message:", err);
+            }
+        };
 
         socket.onerror = (err) => {
-            console.error("❌ WebSocket error:", err);
+            console.error("WebSocket error:", err);
         };
 
         socket.onclose = (e) => {
@@ -115,7 +132,7 @@ export default function CustomerHome() {
         }
     };
 
-    //! API for Confirming trip------------------------------->
+    //! API for Confirming/Booking Ride------------------------------->
     const handleBookRide = async () => {
         if (from && to && selectedVehicle && tripDetails) {
             // showLoader()
@@ -177,17 +194,16 @@ export default function CustomerHome() {
     useEffect(() => {
         let timer: NodeJS.Timeout;
         if (showBookingLoader) {
-            setCountdown(10); //300= 5 minutes, 10 = 10 seconds
+            setCountdown(300); //300= 5 minutes, 10 = 10 seconds
             timer = setInterval(() => {
                 setCountdown((prev) => {
                     if (prev <= 1) {
                         clearInterval(timer);
 
-                        // 👇 Only trigger if confirmedTrip exists
                         if (confirmedTrip && confirmedTrip.id) {
                             handleCancelBooking(undefined, "auto");
                         } else {
-                            console.warn("Confirmed trip is not ready yet for auto cancel.");
+                            console.warn("Cannot cancek ride yet!...");
                         }
                         return 0;
                     }
@@ -195,7 +211,6 @@ export default function CustomerHome() {
                 });
             }, 1000);
         }
-
         return () => clearInterval(timer);
     }, [showBookingLoader, confirmedTrip]);
 
@@ -205,20 +220,14 @@ export default function CustomerHome() {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
-    //* for handling Auto-cancel ride functionality
-    // if (!confirmedTrip || !confirmedTrip.id) {
-    //     console.warn("Confirmed trip is not ready yet for auto cancel.");
-    //     return;
-    // }
-
     //* Ride cancellation API----------------------------------->
     const handleCancelBooking = async (reason?: string, cancelBy?: "auto") => {
-        const description = cancelBy === "auto"
+        const cancelation_description = cancelBy === "auto"
             ? "Auto-cancelled after waiting for 5 minutes"
             : (cancelReason === 'Other' ? customReason : cancelReason);
 
 
-        if (!description) {
+        if (!cancelation_description) {
             toast.warning("Please provide a cancellation reason.");
             return;
         }
@@ -226,7 +235,7 @@ export default function CustomerHome() {
         try {
             setShowBookingLoader(true);
             const response = await API.patch(`/tripCancelView/${confirmedTrip.id}`, {
-                description: description,
+                cancelation_description: cancelation_description,
                 cancel_by: cancelBy
             });
 
@@ -309,6 +318,9 @@ export default function CustomerHome() {
                             </p>
                             <p>
                                 <strong>Distance:</strong> {tripDetails.distance}
+                            </p>
+                            <p>
+                                <strong>Duration period:</strong> {tripDetails.durations}
                             </p>
                             <p>
                                 <strong>Reaching Till:</strong> {tripDetails.estimated_time}
