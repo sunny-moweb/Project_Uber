@@ -8,6 +8,7 @@ import { toast, ToastContainer } from "react-toastify";
 import LocationMap from "../../components/common/LocationMap";
 import Loader from "../../components/CustomerComponents/Loader";
 import { connectWebSocket } from "../../components/auth/WebSocket";
+import { useNavigate } from "react-router-dom";
 
 interface FareDetails {
     id: string;
@@ -46,25 +47,31 @@ export default function CustomerHome() {
     //* ride cancelation-----------
     const [showBookingLoader, setShowBookingLoader] = useState(false);
     const [bookingCancelled, setBookingCancelled] = useState(false);
+    //* countdown state
     const [countdown, setCountdown] = useState(300); //300= 5minutes,
     const [showAutoCancelModal, setShowAutoCancelModal] = useState(false);
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
     const [customReason, setCustomReason] = useState('');
 
+    const navigate = useNavigate()
+
     //* state for handling Socket-Response--------------->  
+    const [approvedTripData, setApprovedTripData] = useState<RideData | null>(null);
     const [rideRequests, setRideRequests] = useState<RideData[]>([]);
 
     //* Web-socket usage----------------
     const socketRef = useRef<WebSocket | null>(null);
+    
+    const { showLoader } = useLoader();
 
     //* Web-socket connection usage--------------------------------->
     useEffect(() => {
         const socket = connectWebSocket();
         if (!socket) return;
-
+        
         socketRef.current = socket;
-
+        
         socket.onopen = () => {
             console.log("✅ WebSocket connected");
         };
@@ -77,6 +84,7 @@ export default function CustomerHome() {
 
                 if (response.event === "location_update") {
                     setRideRequests((prev) => [data, ...prev]);
+                    setApprovedTripData(data);
 
                     setCountdown(0);
                     setShowCancelModal(false);
@@ -101,9 +109,17 @@ export default function CustomerHome() {
         };
     }, []);
 
+    //^ navigating to rideStatus page----------------
+    useEffect(() => {
+        if (approvedTripData) {
+            toast.info("Ride is accepted")
+            setTimeout(() => {
+                navigate("/ride-status", { state: { tripData: approvedTripData } });
+            }, 2000);
+        }
+    }, [approvedTripData]);
 
     //* Loader
-    const { showLoader } = useLoader();
 
     //! API for fetching trip-details---------------------------->
     const handleSubmit = async () => {
@@ -489,7 +505,6 @@ export default function CustomerHome() {
                                         </div>
                                     </div>
                                 )}
-
                             </div>
                         </div>
                     )}

@@ -23,6 +23,9 @@ interface RideData {
 export default function DriverHome() {
   // const [newRideRequest, setNewRideRequest] = useState<RideData | null>(null);
   const [rideRequests, setRideRequests] = useState<RideData[]>([]);
+  //* state for storing data after ride approval-----------
+  const [approvedTripData, setApprovedTripData] = useState<RideData | null>(null);
+
   const socketRef = useRef<WebSocket | null>(null);
   const navigate = useNavigate();
 
@@ -49,6 +52,8 @@ export default function DriverHome() {
           setRideRequests((prev) => [data, ...prev]);
         } else if (response.event === "remove_trip_update") {
           setRideRequests((prev) => prev.filter((ride) => ride.id !== data.id));
+        }else if(response.event==="location_update"){
+          setApprovedTripData(data);
         }
       } catch (err) {
         console.error("Failed to parse WebSocket message:", err);
@@ -99,9 +104,6 @@ export default function DriverHome() {
 
           socketRef.current.send(JSON.stringify(locationPayload));
           console.log("Location sent after approval:", locationPayload);
-          // setTimeout(() => {
-          //   navigate('/driver-ride-status',{state:{locationPayload}});
-          // }, 500);
         } else {
           console.warn("Location or WebSocket not ready");
         }
@@ -111,6 +113,13 @@ export default function DriverHome() {
       toast.error("Failed to approve trip");
     }
   };
+
+  //^ navigating to rideStatus page----------------
+  useEffect(() => {
+  if (approvedTripData) {
+    navigate("/driver-ride-status", { state: { tripData: approvedTripData } });
+  }
+}, [approvedTripData]);
 
 
   return (

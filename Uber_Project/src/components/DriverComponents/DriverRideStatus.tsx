@@ -19,10 +19,13 @@ interface RideData {
 
 export default function DriverRideStatus() {
 
-    const [rideRequests, setRideRequests] = useState<RideData[]>([]);
     const socketRef = useRef<WebSocket | null>(null);
     const location = useLocation();
-    const locationPayload = location.state;
+    console.log("Location State:", location.state);
+    const trip = location.state?.tripData;
+    const [rideRequests, setRideRequests] = useState<RideData[]>(
+        trip ? [trip] : []
+    );
 
     //* Web-socket connection usage--------------------------------->
     useEffect(() => {
@@ -33,15 +36,6 @@ export default function DriverRideStatus() {
 
         socket.onopen = () => {
             console.log("✅ WebSocket connected");
-
-            // Emit something if needed
-            if (locationPayload) {
-                socket.send(JSON.stringify({
-                    // event: "subscribe_to_ride",
-                    type: "receive_location_update",
-                    data: locationPayload,
-                }));
-            }
         };
 
         socket.onmessage = (event) => {
@@ -82,13 +76,12 @@ export default function DriverRideStatus() {
                 title="React.js Driver Dashboard"
                 description="This is React.js Driver Ride Status page"
             />
-            <div className="mt-6 p-4 bg-gray-50 border-t-2 border-gray-200 rounded-lg">
-                <h4 className="font-semibold text-xl mb-4 text-green-500">--- Trip Summary ---</h4>
+                <h4 className="font-semibold text-xl text-center mb-4 text-green-500">--- Trip Summary 🚖---</h4>
                 {rideRequests.length > 0 ? (
                     rideRequests.map((trip) => (
                         <div
                             key={trip.id}
-                            className="mt-6 p-4 bg-gray-50 border-t-2 border-gray-200 rounded-lg shadow-sm"
+                            className="mt-6 p-4 w-80 bg-gray-50 border-t-2 border-gray-200 rounded-lg shadow-sm content-center mx-auto flex flex-col items-center"
                         >
                             <p>
                                 <strong>Pickup Location:</strong> {shortenLocation(trip.pickup_location)}
@@ -97,13 +90,13 @@ export default function DriverRideStatus() {
                                 <strong>Drop Location:</strong> {shortenLocation(trip.drop_location)}
                             </p>
                             <p>
-                                <strong>Distance:</strong> {trip.distance} km
+                                <strong>Distance:</strong> {trip.distance}
                             </p>
                             <p>
-                                <strong>Duration:</strong> {trip.durations} mins
+                                <strong>Duration:</strong> {trip.durations}
                             </p>
                             <p>
-                                <strong>ETA:</strong> {trip.estimated_time}
+                                <strong>Estimated Reaching Time:</strong> {trip.estimated_time}
                             </p>
                             <p>
                                 <strong>Total Fare:</strong> ₹{trip.total_fare}
@@ -113,7 +106,6 @@ export default function DriverRideStatus() {
                 ) : (
                     <p></p>
                 )}
-            </div>
         </>
     );
 }
