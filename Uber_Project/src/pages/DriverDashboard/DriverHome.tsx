@@ -29,7 +29,7 @@ export default function DriverHome() {
   const socketRef = useRef<WebSocket | null>(null);
   const navigate = useNavigate();
 
-  //* getting driver loaction and storing----------------
+  //* getting driver loaction and storing----------------          
   const { getLatitude, getLongitude } = useDriverLocation();
 
   //* Web-socket connection usage--------------------------------->
@@ -114,7 +114,7 @@ export default function DriverHome() {
     }
   };
 
-  //^ navigating to rideStatus page----------------
+  //^ navigating to rideStatus page-------------------
   useEffect(() => {
   if (approvedTripData) {
     navigate("/driver-ride-status", { state: { tripData: approvedTripData } });
@@ -133,7 +133,7 @@ export default function DriverHome() {
         <div className="col-span-12 space-y-6 xl:col-span-7">
           <div className="">
             {rideRequests.length > 0 ? (
-              rideRequests.map((ride, index) => (
+              rideRequests.map((ride) => (
                 <div
                   key={ride.id}
                   className={`bg-white shadow rounded-lg p-6 mb-4 border-2 transition-all ${ride.status === "approved"
@@ -143,7 +143,7 @@ export default function DriverHome() {
                       : "border-gray-200"
                     }`}
                 >
-                  <h2 className="text-lg font-semibold">🛣️ New Ride Request #{index + 1}</h2>
+                  <h2 className="text-lg font-semibold">🛣️ New Ride Request</h2>
                   <div className="mb-4">
                     <p className="text-gray-800">
                       Customer: <span className="text-blue-600">{ride.first_name}{ride.last_name}</span>
@@ -190,122 +190,3 @@ export default function DriverHome() {
     </>
   );
 }
-
-
-
-// <div className="col-span-12 space-y-6 xl:col-span-7">
-//   {rideRequests.length > 0 ? (
-//     rideRequests.map((ride, index) => (
-//       <div key={ride.id} className="p-4 bg-white rounded shadow space-y-2 mb-4">
-//         <h2 className="text-lg font-semibold">🚗 New Ride Request #{index + 1}</h2>
-//         {/* <p><strong>ID:</strong> {ride.id}</p> */}
-//         <p><strong>Name:</strong> {ride.first_name} {ride.last_name}</p>
-//         <p><strong>Pickup location:</strong> {ride.pickup_location}</p>
-//         <p><strong>Drop Point:</strong> {ride.drop_location}</p>
-//         <p><strong>Distance:</strong> {ride.distance}</p>
-//         <p><strong>Fare:</strong> ₹{ride.fare}</p>
-//         <p><strong>Vehicle Type:</strong> {ride.vehicle_type}</p>
-//       </div>
-//     ))
-//   ) : (
-//     <p className="text-gray-400">No new ride request yet.</p>
-//   )}
-// </div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import PageMeta from "../../components/common/PageMeta";
-// import { useEffect, useState, useRef } from "react";
-// import { toast } from "react-toastify";
-// import RideRequest from "../../components/DriverComponents/RideRequest";
-// import { connectWebSocket } from "../../components/auth/WebSocket";
-
-// interface RideRequest {
-//   pickup_location: string | number;
-//   drop_location: string | number;
-//   vehicle_type: string | number;
-//   fare: number;
-// }
-
-// export default function DriverHome() {
-//   // const [newRideRequest, setNewRideRequest] = useState<RideRequest | null>(null);
-//   const socketRef = useRef<WebSocket | null>(null);
-
-//   useEffect(() => {
-//     const socket = connectWebSocket();
-//     socketRef.current = socket;
-
-//     socket.onopen = () => {
-//       console.log("✅ WebSocket connected");
-//     };
-//     socket.onerror = (err) => {
-//       console.error("❌ WebSocket error:", err);
-//     };
-
-//     socket.onclose = (e) => {
-//       console.warn("⚠️ WebSocket closed:", e.code, e.reason);
-//     };
-
-//     return () => {
-//       socket.close();
-//     };
-//   }, []);
-
-//   return (
-//     <>
-//       <PageMeta
-//         title="React.js Driver Dashboard"
-//         description="This is React.js Driver Dashboard page"
-//       />
-
-
-//       <div className="grid grid-cols-12 gap-4 md:gap-6">
-//         <div className="col-span-12 space-y-6 xl:col-span-7">
-//           {/* Rides will appear here */}
-//           <RideRequest />
-//           {/* <MonthlySalesChart /> */}
-//         </div>
-
-//         <div className="col-span-12 xl:col-span-5">
-//           {/* <MonthlyTarget /> */}
-//         </div>
-
-//         <div className="col-span-12">
-//           {/* <StatisticsChart /> */}
-//         </div>
-
-//         <div className="col-span-12 xl:col-span-5">
-//           {/* <DemographicCard /> */}
-//         </div>
-
-//         <div className="col-span-12 xl:col-span-7">
-//           {/* <RecentOrders /> */}
-//         </div>
-//       </div>
-//     </>
-//   );
-// }

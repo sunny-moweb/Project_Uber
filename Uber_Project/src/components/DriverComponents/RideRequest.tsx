@@ -100,20 +100,6 @@ const RideRequest = () => {
                   </button>
                   <button
                     className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded"
-                    onClick={async () => {
-                      try {
-                        await API.patch(`/rideRequests/${ride.id}/reject`);
-                        toast.info("Ride rejected.");
-                        setRides((prev) =>
-                          prev.map((r) =>
-                            r.id === ride.id ? { ...r, status: "rejected" } : r
-                          )
-                        );
-                      } catch (error) {
-                        toast.error("Failed to reject ride.");
-                      }
-                    }}
-                    disabled={ride.status !== "pending"}
                   >
                     Reject
                   </button>

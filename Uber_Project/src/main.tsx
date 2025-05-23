@@ -10,17 +10,19 @@ import { BrowserRouter } from "react-router-dom";
 import { LoaderProvider } from "./components/common/LoaderContext.tsx";
 //* css for map display
 import 'leaflet/dist/leaflet.css';
+import { ToastContainer } from "react-toastify";
 
 
 createRoot(document.getElementById("root")!).render(
   <>
     <ThemeProvider>
       <BrowserRouter>
-      <LoaderProvider>
-      <AppWrapper>
-        <App />
-      </AppWrapper>
-      </LoaderProvider>
+        <LoaderProvider>
+          <AppWrapper>
+            <ToastContainer position="bottom-right" autoClose={3000} hideProgressBar />
+            <App />
+          </AppWrapper>
+        </LoaderProvider>
       </BrowserRouter>
     </ThemeProvider>
   </>

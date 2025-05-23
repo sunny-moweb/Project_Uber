@@ -3,7 +3,6 @@ import PageMeta from "../../components/common/PageMeta";
 import SearchBox from "../../components/CustomerComponents/SearchBox";
 import API from "../../components/auth/axiosInstance";
 import { MdElectricRickshaw, MdElectricBike, MdDirectionsCarFilled } from "react-icons/md";
-import { useLoader } from "../../components/common/LoaderContext";
 import { toast, ToastContainer } from "react-toastify";
 import LocationMap from "../../components/common/LocationMap";
 import Loader from "../../components/CustomerComponents/Loader";
@@ -62,16 +61,15 @@ export default function CustomerHome() {
 
     //* Web-socket usage----------------
     const socketRef = useRef<WebSocket | null>(null);
-    
-    const { showLoader } = useLoader();
+
 
     //* Web-socket connection usage--------------------------------->
     useEffect(() => {
         const socket = connectWebSocket();
         if (!socket) return;
-        
+
         socketRef.current = socket;
-        
+
         socket.onopen = () => {
             console.log("✅ WebSocket connected");
         };
@@ -299,7 +297,7 @@ export default function CustomerHome() {
                 description="This is React.js Customer Dashboard page"
             />
             <ToastContainer position="bottom-right" autoClose={3000} hideProgressBar />
-            <div className="grid grid-cols-12 gap-4 md:gap-6 text-center mt-5 items-center px-40 ml-70">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-4 sm:px-8 lg:px-16 xl:px-32 mt-5 items-start">
                 {/* From / To Location Select Section */}
                 <div className="w-85 col-span-12 md:col-span-6 lg:col-span-4 bg-white p-6 rounded-lg shadow-lg mx-auto">
                     <h3 className="text-2xl font-semibold mb-4 text-center text-green-500">Select Location</h3>
@@ -316,7 +314,7 @@ export default function CustomerHome() {
                     </button>
 
                     {from && to && (
-                        <div className="mt-6 h-64 w-full rounded overflow-hidden">
+                        <div className="mt-6 h-64 w-full rounded overflow-hidden relative">
                             <LocationMap from={from} to={to} />
                         </div>
                     )}
@@ -401,7 +399,6 @@ export default function CustomerHome() {
                                     <div className="mt-4 flex flex-col items-center">
                                         <Loader />
                                         <h3 className="text-green-400 font-medium">Waiting for Driver: {formatTime(countdown)}</h3>
-                                        {/* <p className="text-black mt-2">Auto-cancel in: {formatTime(countdown)}</p> */}
                                         <button
                                             onClick={() => setShowCancelModal(true)}
                                             className="mt-3 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
