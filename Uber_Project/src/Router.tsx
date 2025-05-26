@@ -12,6 +12,7 @@ import BasicTables from "./pages/Tables/BasicTables";
 import DriverRequests from "./components/tables/BasicTables/DriverRequests";
 import DriverDetailsView from "./pages/AuthPages/DriverDetails";
 import DraftDrivers from "./components/tables/BasicTables/DraftDrivers";
+import PaymentHistory from "./components/tables/BasicTables/PaymentHistory";
 // ... other admin imports
 
 
@@ -27,6 +28,8 @@ import DriverRideStatus from "./components/DriverComponents/DriverRideStatus";
 import CustomerHome from "./pages/CustomerDashboard/CustomerHome";
 import CustomerProfile from "./components/CustomerComponents/CustomerProfile";
 import RideStatus from "./components/CustomerComponents/RideStatus";
+import RideHistory from "./components/CustomerComponents/RideHistory";
+import TripInfo from "./components/CustomerComponents/TripInfo";
 
 
 // Auth Pages
@@ -91,6 +94,8 @@ export default function Router() {
                 </Route>
 
                 {/* Admin Public Routes */}
+                {/* Payments */}
+                <Route path="/payment-history" element={<PaymentHistory />} />
                 <Route path="/profile" element={<UserProfiles />} />
                 <Route path="/calendar" element={<Calendar />} />
                 <Route path="/blank" element={<Blank />} />
@@ -136,6 +141,8 @@ export default function Router() {
                     <Route path="/customer/home" element={<CustomerHome/>}/>
                     <Route path="/customer/profile" element={<CustomerProfile />} />
                     <Route path="/ride-status" element={<RideStatus />} />
+                    <Route path="/my-rides" element={<RideHistory />} />
+                    <Route path="/trip-details/:id" element={<TripInfo />} />
                 </Route>
             </Route>
 

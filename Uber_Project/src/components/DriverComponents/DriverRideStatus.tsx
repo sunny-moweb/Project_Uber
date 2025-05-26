@@ -35,7 +35,22 @@ export default function DriverRideStatus() {
     const [isOtpVerified, setIsOtpVerified] = useState(false);
     //* handling data after submitting OTP--------------
     const [reachingData, setReachingData] = useState<RideData[]>([]);
+    const [completedTrips, setCompletedTrips] = useState<number[]>([]);
+    const [amountReceivedTrips, setAmountReceivedTrips] = useState<number[]>([]);
+    //* modal for Rating Ride-------------
+    const [feedbackText, setFeedbackText] = useState("");
+    const [rating, setRating] = useState<number | "">("");
+    const [feedbackTripId, setFeedbackTripId] = useState<number | null>(null);
 
+    const openFeedbackModal = (tripId: number) => {
+        setFeedbackTripId(tripId);
+    };
+
+    const closeFeedbackModal = () => {
+        setFeedbackTripId(null);
+        setFeedbackText("");
+        setRating(0);
+    };
 
     const { getLatitude, getLongitude } = useDriverLocation();
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -184,6 +199,37 @@ export default function DriverRideStatus() {
         }
     }
 
+    //* handling ride-complete--------------------->
+    const handleCompleteRide = async (id: number) => {
+        try {
+            await API.patch(`/tripCompletedView/${id}`);
+            toast.success("Ride Completed🎉...");
+            setCompletedTrips((prev) => [...prev, id]);
+            openFeedbackModal(tripFromLocation.id);
+        } catch {
+            toast.error("Cannot reach the destination!");
+        }
+    };
+
+    //* handling feedbacks------------------>
+    const handleFeedback = async (id: number) => {
+        try {
+            await API.patch(`/feedbackRatingView/${id}`, {
+                feedback: feedbackText,
+                rating: rating,
+            });
+            toast.success("Feedback submitted successfully!");
+            setAmountReceivedTrips((prev) => [...prev, id]);
+            closeFeedbackModal();
+            setTimeout(() => {
+                navigate("/driver/home");
+            }, 1000);
+        } catch (error) {
+            console.error("Failed to submit feedback:", error);
+            toast.error("Failed to submit feedback");
+        }
+    };
+
     const shortenLocation = (location?: string) => {
         if (!location) return "";
         return location.split(",")[0];
@@ -222,7 +268,7 @@ export default function DriverRideStatus() {
                                     <strong>Drop Location:</strong> {shortenLocation(trip.drop_location)}
                                 </p>
                                 <p>
-                                    <strong>Distance:</strong> {trip.distance} Km
+                                    <strong>Distance:</strong> {trip.distance}
                                 </p>
                                 <p>
                                     <strong>Reaching Time:</strong> {trip.durations}
@@ -236,6 +282,54 @@ export default function DriverRideStatus() {
                                 <p>
                                     <strong>Total Fare:</strong> Rs:- {trip.total_fare}
                                 </p>
+                                {trip.distance === 0 && !completedTrips.includes(trip.id) && (
+                                    <button
+                                        className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded"
+                                        onClick={() => handleCompleteRide(trip.id)}
+                                    >
+                                        Ride Complete
+                                    </button>
+                                )}
+                                {/* Modal for Ride-Feedback */}
+                                {feedbackTripId !== null && (
+                                    <div className="fixed inset-0 flex items-center justify-center bg-black/10 z-50">
+                                        <div className="bg-white p-4 rounded-lg shadow w-80">
+                                            <h3 className="text-lg font-medium mb-2">Customer Feedback</h3>
+                                            <textarea
+                                                placeholder="Write feedback here..."
+                                                className="w-full h-24 px-3 py-2 border rounded text-sm resize-none"
+                                                value={feedbackText}
+                                                onChange={(e) => setFeedbackText(e.target.value)}
+                                            />
+
+                                            <select
+                                                className="w-full mt-3 px-3 py-2 border rounded text-sm"
+                                                value={rating}
+                                                onChange={(e) => setRating(Number(e.target.value))}
+                                            >
+                                                <option value="">Select Rating</option>
+                                                {[1, 2, 3, 4, 5].map((num) => (
+                                                    <option key={num} value={num}>{num}</option>
+                                                ))}
+                                            </select>
+
+                                            <div className="flex justify-end gap-2 mt-4">
+                                                <button
+                                                    onClick={closeFeedbackModal}
+                                                    className="px-3 py-1 bg-gray-200 text-gray-700 rounded"
+                                                >
+                                                    Skip
+                                                </button>
+                                                <button
+                                                    onClick={() => handleFeedback(feedbackTripId)}
+                                                    className="px-3 py-1 bg-green-600 text-white rounded"
+                                                >
+                                                    Submit
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
                             </>
                         ) : (
                             <>

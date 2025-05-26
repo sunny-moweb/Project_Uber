@@ -3,10 +3,11 @@ import {
   GroupIcon,
   CheckCircleIcon,
   DocsIcon,
-  GridIcon,  
+  GridIcon,
 } from "../../icons";
 import API from "../auth/axiosInstance";
 import { FaClipboardList } from "react-icons/fa";
+import { FcMoneyTransfer } from "react-icons/fc";
 import { CgSandClock } from "react-icons/cg";
 
 export default function EcommerceMetrics() {
@@ -16,10 +17,13 @@ export default function EcommerceMetrics() {
     drivers: 0,
     driverRequests: 0,
     draftDrivers: 0,
+    successfull_trips: 0,
+    total_payment_pending: 0,
+    total_amount_pending: 0,
   });
 
   //! for fetching Counts/Totals
-    useEffect(() => {
+  useEffect(() => {
     const fetchRecords = async () => {
       try {
         const token = localStorage.getItem("access_token");
@@ -30,6 +34,9 @@ export default function EcommerceMetrics() {
           drivers: counts.driver_count,
           driverRequests: counts.pending_driver_request_count,
           draftDrivers: counts.draft_driver_request_count,
+          successfull_trips: counts.total_successfull_trip,
+          total_payment_pending: counts.total_number_payment_pending,
+          total_amount_pending: counts.total_amount_pending
         });
       } catch (error) {
         console.error("Failed to fetch drivers", error);
@@ -53,7 +60,7 @@ export default function EcommerceMetrics() {
               Customers
             </span>
             <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
-            {count.customers}
+              {count.customers}
             </h4>
           </div>
         </div>
@@ -99,7 +106,7 @@ export default function EcommerceMetrics() {
       {/* <!-- Draft-Drivers Count Start --> */}
       <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
         <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
-          <CgSandClock  className="text-gray-800 size-6 dark:text-white/90" />
+          <CgSandClock className="text-gray-800 size-6 dark:text-white/90" />
         </div>
 
         <div className="flex items-end justify-between mt-5">
@@ -114,6 +121,61 @@ export default function EcommerceMetrics() {
         </div>
       </div>
       {/* <!-- Metric Item End --> */}
+
+      {/* Total-Rides */}
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+          <CheckCircleIcon className="text-gray-800 size-6 dark:text-white/90" />
+        </div>
+        <div className="flex items-end justify-between mt-5">
+          <div>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              Total Trips
+            </span>
+            <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
+              {count.successfull_trips}
+            </h4>
+          </div>
+        </div>
+      </div>
+      {/* <!-- Metric Item End --> */}
+
+    {/* Total Pending-payments */}
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+          <FcMoneyTransfer className="text-gray-800 size-6 dark:text-white/90" />
+        </div>
+        <div className="flex items-end justify-between mt-5">
+          <div>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              Pending Payments
+            </span>
+            <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
+              {count.total_payment_pending}
+            </h4>
+          </div>
+        </div>
+      </div>
+      {/* <!-- Metric Item End --> */}
+
+    {/* Total amount-pending */}
+    <div className="rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-800 dark:bg-white/[0.03] md:p-6">
+        <div className="flex items-center justify-center w-12 h-12 bg-gray-100 rounded-xl dark:bg-gray-800">
+          <CgSandClock className="text-gray-800 size-6 dark:text-white/90" />
+        </div>
+        <div className="flex items-end justify-between mt-5">
+          <div>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              Total Amount Pending
+            </span>
+            <h4 className="mt-2 font-bold text-gray-800 text-title-sm dark:text-white/90">
+              {count.total_amount_pending}
+            </h4>
+          </div>
+        </div>
+      </div>
+      {/* <!-- Metric Item End --> */}
+
     </div>
   );
 }

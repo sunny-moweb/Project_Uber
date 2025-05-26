@@ -17,6 +17,7 @@ interface RideData {
   first_name: string;
   last_name: string;
   vehicle_type: string | number;
+  ratings: number;
   status: "pending" | "approved" | "rejected";
 }
 
@@ -52,7 +53,7 @@ export default function DriverHome() {
           setRideRequests((prev) => [data, ...prev]);
         } else if (response.event === "remove_trip_update") {
           setRideRequests((prev) => prev.filter((ride) => ride.id !== data.id));
-        }else if(response.event==="location_update"){
+        } else if (response.event === "location_update") {
           setApprovedTripData(data);
         }
       } catch (err) {
@@ -116,10 +117,10 @@ export default function DriverHome() {
 
   //^ navigating to rideStatus page-------------------
   useEffect(() => {
-  if (approvedTripData) {
-    navigate("/driver-ride-status", { state: { tripData: approvedTripData } });
-  }
-}, [approvedTripData]);
+    if (approvedTripData) {
+      navigate("/driver-ride-status", { state: { tripData: approvedTripData } });
+    }
+  }, [approvedTripData]);
 
 
   return (
@@ -151,6 +152,10 @@ export default function DriverHome() {
                     <p className="text-gray-700">
                       From: <span className="text-green-700">{ride.pickup_location}</span><br />
                       To: <span className="text-green-700">{ride.drop_location}</span>
+                    </p>
+                    {/* <p className="text-gray-600">Customer Ratings: {ride.ratings}</p> */}
+                    <p className="text-gray-600">
+                      Customer Ratings: {Number(ride.ratings).toFixed(2)} ⭐
                     </p>
                     <p className="text-gray-600">Vehicle: {ride.vehicle_type}</p>
                     <p className="text-gray-600">Distance: {ride.distance}</p>

@@ -22,15 +22,12 @@ interface Ride {
 }
 
 const RideStatus = () => {
-    const [driverLocation, setDriverLocation] = useState<{ lat: number; lon: number } | null>(null);
+    // const [driverLocation, setDriverLocation] = useState<{ lat: number; lon: number } | null>(null);
     const socketRef = useRef<WebSocket | null>(null);
     const location = useLocation();
     const trip = location.state?.tripData;
-    const [rideRequests, setRideRequests] = useState<Ride[]>(
-        trip ? [trip] : []
-    );
+    const [rideRequests, setRideRequests] = useState<Ride[]>(trip ? [trip] : []);
     //* for ride cancelation---------------
-    const [confirmedTrip, setConfirmedTrip] = useState<any>(null);
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
     const [customReason, setCustomReason] = useState('');
