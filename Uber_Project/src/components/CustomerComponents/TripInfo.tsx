@@ -12,6 +12,9 @@ interface Trip {
     distance: string | number;
     fare: number;
     name: string;
+    driver_feedback: string | null;
+    driver_rating: number | null;
+    status: string;
 }
 
 const TripInfo = () => {
@@ -55,59 +58,58 @@ const TripInfo = () => {
     useEffect(() => {
         const fetchTripInfo = async () => {
             try {
-                console.log("Fetching details for:", id);
-
                 const response = await API.get(`/tripDetailsHistoryView/${id}`);
                 setTripInfo(response.data);
             } catch (error: any) {
                 console.error("Failed to fetch trip info:", error);
             }
         };
-
         if (id) {
             fetchTripInfo();
         }
     }, [id]);
 
     return (
-        <div className="p-4">
+        <div className="p-6">
             <h1 className="text-2xl text-green-500 font-bold mb-4 text-center">--- Your Ride Info 🛣️ ---</h1>
             {tripInfo ? (
                 <div
                     key={tripInfo.id}
-                    className="mt-6 p-4 w-100 bg-gray-50 border-t-2 border-gray-200 rounded-lg shadow-sm content-center mx-auto flex flex-col items-center"
+                    className="bg-white shadow rounded-lg p-6 mb-6 flex items-center gap-6"
                 >
-                    <p>
-                        <strong>Driver Name: </strong> {tripInfo.name}
-                    </p>
-                    <p>
-                        <strong>PickUp Location: </strong>{tripInfo.pickup_location}
-                    </p>
-                    <p>
-                        <strong>Drop Location:</strong> {tripInfo.drop_location}
-                    </p>
-                    <p>
-                        <strong>PickUp Time:</strong> {new Date(tripInfo.pickup_time).toLocaleString()}
-                    </p>
-                    <p>
-                        <strong>Drop Time:</strong> {new Date(tripInfo.drop_time).toLocaleString()}
-                    </p>
-                    <p>
-                        <strong>Drop Time:</strong> {tripInfo.drop_time}
-                    </p>
-                    <p>
-                        <strong>Distance:</strong> {tripInfo.distance} km
-                    </p>
-                    <p>
-                        <strong>Total Fare:</strong> ₹{tripInfo.fare}
-                    </p>
-
-                    <button
-                        onClick={() => openFeedbackModal(tripInfo.id)}
-                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
-                    >
-                        Give Rating
-                    </button>
+                    <div className="space-y-2">
+                        <p className='text-gray-700'>
+                            <strong>Driver Name: </strong> {tripInfo.name}
+                        </p>
+                        <p className='text-gray-700'>
+                            <strong>PickUp Location: </strong>{tripInfo.pickup_location} <span className='text-gray-500'>({new Date(tripInfo.pickup_time).toLocaleString()})</span>
+                        </p>
+                        <p className='text-gray-700'>
+                            <strong>Drop Location:</strong> {tripInfo.drop_location} <span className='text-gray-500'>({new Date(tripInfo.drop_time).toLocaleString()})</span>
+                        </p>
+                        <p className='text-gray-700'>
+                            <strong>Distance:</strong> {tripInfo.distance} km
+                        </p>
+                        <p className='text-gray-700'>
+                            <strong>Total Fare:</strong> ₹{tripInfo.fare}
+                        </p>
+                        {tripInfo.driver_feedback==null && tripInfo.driver_rating==null && (
+                            <button
+                                onClick={() => openFeedbackModal(tripInfo.id)}
+                                className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"
+                            >
+                                Give Rating
+                            </button>
+                        )}
+                    </div>
+                    <div className="ml-auto mb-20">
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium 
+                            ${tripInfo.status === "Completed" ? "bg-green-200 text-green-800" : ""}`
+                        }>
+                            {tripInfo.status.charAt(0).toUpperCase() + tripInfo.status.slice(1)}
+                        </span>
+                    </div>
+                    {/* Modal for feedback */}
                     {feedbackTripId !== null && (
                         <div className="fixed inset-0 flex items-center justify-center bg-black/10 z-50">
                             <div className="bg-white p-4 rounded-lg shadow w-80">

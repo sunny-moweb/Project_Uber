@@ -50,6 +50,7 @@ export default function DriverRideStatus() {
         setFeedbackTripId(null);
         setFeedbackText("");
         setRating(0);
+        navigate("/driver/home");
     };
 
     const { getLatitude, getLongitude } = useDriverLocation();
@@ -223,6 +224,7 @@ export default function DriverRideStatus() {
             closeFeedbackModal();
             setTimeout(() => {
                 navigate("/driver/home");
+                toast.info("feedback given successfully!");
             }, 1000);
         } catch (error) {
             console.error("Failed to submit feedback:", error);

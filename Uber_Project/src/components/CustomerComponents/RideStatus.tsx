@@ -31,6 +31,10 @@ const RideStatus = () => {
     const [showCancelModal, setShowCancelModal] = useState(false);
     const [cancelReason, setCancelReason] = useState('');
     const [customReason, setCustomReason] = useState('');
+    //* modal for Rating Ride-------------
+    const [feedbackText, setFeedbackText] = useState("");
+    const [rating, setRating] = useState<number | "">("");
+    const [feedbackTripId, setFeedbackTripId] = useState<number | null>(null);
     const navigate = useNavigate();
 
     //* Web-socket connection usage--------------------------------->
@@ -61,6 +65,10 @@ const RideStatus = () => {
                             return [data, ...prev];
                         }
                     });
+                } else if (response.event === "trip_complete_update") { //navigating when driver completes the trip......
+                    // navigate('/customer/home');
+                    openFeedbackModal(data.id);
+                    toast.success("Trip completed successfully!");
                 }
             } catch (err) {
                 console.error("Failed to parse WebSocket message:", err);
@@ -79,6 +87,36 @@ const RideStatus = () => {
             socket.close();
         };
     }, []);
+
+
+    const openFeedbackModal = (tripId: number) => {
+        setFeedbackTripId(tripId);
+    };
+
+    const closeFeedbackModal = () => {
+        setFeedbackTripId(null);
+        setFeedbackText("");
+        setRating(0);
+        navigate("/customer/home");
+    };
+
+    //* handling feedbacks------------------>
+    const handleFeedback = async (id: number) => {
+        try {
+            await API.patch(`/feedbackRatingView/${id}`, {
+                feedback: feedbackText,
+                rating: rating,
+            });
+            closeFeedbackModal();
+            setTimeout(() => {
+                navigate("/customer/home");
+                toast.info("feedback given successfully!");
+            }, 1000);
+        } catch (error) {
+            console.error("Failed to submit feedback:", error);
+            toast.error("Failed to submit feedback");
+        }
+    };
 
     //* Ride cancellation API----------------------------------->
     const handleCancelBooking = async (cancelation_description: string) => {
@@ -228,6 +266,46 @@ const RideStatus = () => {
                                 disabled={!cancelReason || (cancelReason === 'Other' && !customReason)}
                             >
                                 Confirm Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Modal for ride-feedback */}
+            {feedbackTripId !== null && (
+                <div className="fixed inset-0 flex items-center justify-center bg-black/10 z-50">
+                    <div className="bg-white p-4 rounded-lg shadow w-80">
+                        <h3 className="text-lg font-medium mb-2">Customer Feedback</h3>
+                        <textarea
+                            placeholder="Write feedback here..."
+                            className="w-full h-24 px-3 py-2 border rounded text-sm resize-none"
+                            value={feedbackText}
+                            onChange={(e) => setFeedbackText(e.target.value)}
+                        />
+
+                        <select
+                            className="w-full mt-3 px-3 py-2 border rounded text-sm"
+                            value={rating}
+                            onChange={(e) => setRating(Number(e.target.value))}
+                        >
+                            <option value="">Select Rating</option>
+                            {[1, 2, 3, 4, 5].map((num) => (
+                                <option key={num} value={num}>{num}</option>
+                            ))}
+                        </select>
+
+                        <div className="flex justify-end gap-2 mt-4">
+                            <button
+                                onClick={closeFeedbackModal}
+                                className="px-3 py-1 bg-gray-200 text-gray-700 rounded"
+                            >
+                                Skip
+                            </button>
+                            <button
+                                onClick={() => handleFeedback(feedbackTripId)}
+                                className="px-3 py-1 bg-green-600 text-white rounded"
+                            >
+                                Submit
                             </button>
                         </div>
                     </div>

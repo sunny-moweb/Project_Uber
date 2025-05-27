@@ -26,7 +26,6 @@ export default function EcommerceMetrics() {
   useEffect(() => {
     const fetchRecords = async () => {
       try {
-        const token = localStorage.getItem("access_token");
         const response = await API.get('/userCountView');
         const counts = response.data?.data;
         setCount({

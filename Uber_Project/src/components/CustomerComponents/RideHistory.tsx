@@ -25,7 +25,7 @@ const RideHistory = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const [sortColumn, setSortColumn] = useState<string | null>(null);
-    const navigate=useNavigate();
+    const navigate = useNavigate();
 
 
     //! API for past-ride-list----------------
@@ -70,17 +70,13 @@ const RideHistory = () => {
                 title="React.js Payment list Dashboard"
                 description="This is React.js Payment List Dashboard page for Admin"
             />
-            <PageBreadcrumb pageTitle="Ride-Payments History" />
+            <h2 className='text-center text-2xl font-bold mb-4'>--- Ride-History ---</h2>
             <div className="m-6">
-                {/* <h2 className=" mb-4 text-center text-green-500" style={{ fontSize: "25px" }}>--- Draft Drivers ---</h2> */}
-                <table className="min-w-full bg-white border border-gray-200 shadow-md rounded-lg overflow-hidden">
+                <table className="min-w-full bg-white border border-gray-200 shadow-md rounded-lg overflow-x-auto">
                     <thead className="bg-gray-100">
                         <tr>
                             <th className="border px-4 py-2">S.No</th>
-                            {/* <th className="text-left px-4 py-3 border-b">Name</th> */}
-                            {/* <th className="text-left px-4 py-3 border-b">Pickup Point</th> */}
                             <th className="text-left px-4 py-3 border-b">Drop Point</th>
-                            {/* <th className="text-left px-4 py-3 border-b">Pickup Time</th> */}
                             <th className="text-left px-4 py-3 border-b">Last Action Time</th>
                             <th className="text-left px-4 py-3 border-b">Distance</th>
                             <th className="text-left px-4 py-3 border-b">Fare Amount</th>
@@ -92,10 +88,7 @@ const RideHistory = () => {
                         {currentRides.map((ride, index) => (
                             <tr key={ride.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                                 <td className="border px-4 py-2 ">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</td>
-                                {/* <td className="px-4 py-3 border-b">{ride.name}</td> */}
-                                {/* <td className="px-4 py-3 border-b">{ride.pickup_location}</td> */}
                                 <td className="px-4 py-3 border-b">{ride.drop_location}</td>
-                                {/* <td className="px-4 py-3 border-b">{formatDate(ride.pickup_time)}</td> */}
                                 <td className="px-4 py-3 border-b">
                                     {formatDate(ride.drop_time || ride.cancelled_at)}
                                 </td>
@@ -104,14 +97,14 @@ const RideHistory = () => {
                                 <td className="px-4 py-3 border-b">{ride.status}</td>
                                 <td className="px-8 py-3 border-b">
                                     <FaInfoCircle
-                                        className={
-                                            ride.status === "Accepted" 
+                                        className={`${ride.status === "Completed" 
                                                 ? "text-blue-500 cursor-pointer"
                                                 : "text-gray-400 cursor-not-allowed opacity-50"
-                                        }
-                                        onClick={() => navigate(`/trip-details/${ride.id}`)}
-                                        aria-disabled={ride.status !== "Accepted"}
+                                            }`}
+                                        onClick={() => ride.status === "Completed" && navigate(`/trip-details/${ride.id}`)}
+                                        // aria-disabled={ride.status !== "Completed"}
                                     />
+
                                 </td>
                             </tr>
                         ))}
