@@ -43,10 +43,10 @@ const TripInfo = () => {
                 feedback: feedbackText,
                 rating: rating,
             });
-            toast.success("Feedback submitted successfully!");
             closeFeedbackModal();
             setTimeout(() => {
                 navigate("/customer/home");
+                toast.success("Feedback submitted successfully!");
             }, 1000);
         } catch (error) {
             console.error("Failed to submit feedback:", error);
@@ -77,7 +77,7 @@ const TripInfo = () => {
                     key={tripInfo.id}
                     className="bg-white shadow rounded-lg p-6 mb-6 flex items-center gap-6"
                 >
-                    <div className="space-y-2">
+                    <div className="space-y-2"> 
                         <p className='text-gray-700'>
                             <strong>Driver Name: </strong> {tripInfo.name}
                         </p>
@@ -93,7 +93,7 @@ const TripInfo = () => {
                         <p className='text-gray-700'>
                             <strong>Total Fare:</strong> ₹{tripInfo.fare}
                         </p>
-                        {tripInfo.driver_feedback==null && tripInfo.driver_rating==null && (
+                        {tripInfo.driver_feedback == null && tripInfo.driver_rating == null && (
                             <button
                                 onClick={() => openFeedbackModal(tripInfo.id)}
                                 className="mt-4 px-4 py-2 bg-blue-600 text-white rounded"

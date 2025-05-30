@@ -93,7 +93,7 @@ const DriverDetailsView = () => {
                 id: id,
                 type: driver?.type,
             });
-
+0
             if (res.data.status === "success") {
                 const { access, refresh, role } = res.data.data;
 

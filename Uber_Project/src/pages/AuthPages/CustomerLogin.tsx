@@ -146,7 +146,7 @@ export default function CustomerLogin() {
                                                     maxLength={13}
                                                     className="w-full px-10 py-2 border rounded-md focus:outline-none focus:ring focus:ring-brand-500"
                                                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                                        let value = e.target.value.replace(/[^0-9]/g, "");
+                                                        let value = e.target.value.replace(/[^0-9+]/g, "");
                                                         if (!value.startsWith("91")) {
                                                             value = "91" + value;
                                                         }

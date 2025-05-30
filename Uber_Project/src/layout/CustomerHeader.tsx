@@ -22,7 +22,7 @@ const CustomerHeader: React.FC = () => {
         <header className="sticky top-0 w-full bg-white z-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
             <div className="max-w-7xl mx-auto flex items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
                 <Link to="/customer/home">
-                    <h2 className="text-xl sm:text-2xl font-semibold text-blue-600">Customer Dashboard</h2>
+                    <h2 className="text-xl sm:text-2xl font-semibold text-blue-600">Ride Booking</h2>
                 </Link>
                 <div className="flex items-center space-x-4">
                     {/* <ThemeToggleButton /> */}

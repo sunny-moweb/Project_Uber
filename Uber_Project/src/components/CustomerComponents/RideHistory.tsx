@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import API from '../auth/axiosInstance';
 import Pagination from '../common/Pagination';
 import PageMeta from '../common/PageMeta';
-import PageBreadcrumb from '../common/PageBreadCrumb';
 import { FaInfoCircle } from "react-icons/fa";
 import { useNavigate } from 'react-router-dom';
 
@@ -102,9 +101,7 @@ const RideHistory = () => {
                                                 : "text-gray-400 cursor-not-allowed opacity-50"
                                             }`}
                                         onClick={() => ride.status === "Completed" && navigate(`/trip-details/${ride.id}`)}
-                                        // aria-disabled={ride.status !== "Completed"}
                                     />
-
                                 </td>
                             </tr>
                         ))}

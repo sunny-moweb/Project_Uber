@@ -90,7 +90,7 @@ const AppHeader: React.FC = () => {
               src="./images/logo/logo.svg"
               alt="Logo"
             /> */}
-            <h2 style={{ color: 'blue', fontSize: '25px' }}>Taxi-Booking</h2>
+            <h2 style={{ color: 'blue', fontSize: '25px' }}>Ride-Booking</h2>
             {/* <img
               className="hidden dark:block"
               src="./images/logo/logo-dark.svg"

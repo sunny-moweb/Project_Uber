@@ -201,8 +201,11 @@ export default function CustomerSignup() {
                                 placeholder="Enter Mobile Number"
                                 maxLength={13}
                                 onChange={(e) => {
-                                    let value = e.target.value.replace(/[^0-9+]/g, "");
-                                    formik.setFieldValue("mobile_number", value);
+                                    let value = e.target.value.replace(/[^0-9]/g, "");
+                                    if (!value.startsWith("91")) {
+                                        value = "91" + value;
+                                    }
+                                    formik.setFieldValue("mobile_number", `+${value}`);
                                 }}
                                 onBlur={formik.handleBlur}
                                 value={formik.values.mobile_number}
@@ -225,6 +228,9 @@ export default function CustomerSignup() {
                                         formik.setFieldValue("dob", date?.toISOString().split("T")[0])
                                     }
                                     dateFormat="yyyy-MM-dd"
+                                    showYearDropdown
+                                    showMonthDropdown
+                                    dropdownMode="select"
                                     placeholderText="Select DOB"
                                     className="mt-1 block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm"
                                 />

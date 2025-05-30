@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import API from '../../auth/axiosInstance';
-import Pagination from '../../common/Pagination';
-import PageMeta from '../../common/PageMeta';
-import PageBreadcrumb from '../../common/PageBreadCrumb';
+import { useEffect, useState } from 'react';
+import API from '../auth/axiosInstance';
+import Pagination from '../common/Pagination';
+import PageBreadcrumb from '../common/PageBreadCrumb';
 // import Header from '../../common/Header';
 
 type Driver = {
@@ -11,12 +9,11 @@ type Driver = {
     first_name: string;
     last_name: string;
     mobile_number: string;
-    created_at: string;
 };
 
 const ITEMS_PER_PAGE = 5;
 
-const DraftDrivers = () => {
+const RecentDrivers = () => {
     const [drivers, setDrivers] = useState<Driver[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -55,11 +52,7 @@ const DraftDrivers = () => {
 
     return (
         <>
-            <PageMeta
-                title="React.js Driver List Dashboard | TailAdmin - Next.js Admin Dashboard Template"
-                description="This is React.js Driver List Dashboard page for TailAdmin - React.js Tailwind CSS Admin Dashboard Template"
-            />
-            <PageBreadcrumb pageTitle="Draft Drivers" />
+            <PageBreadcrumb pageTitle="Recent Drivers" />
             <div className="m-6">
                 {/* <h2 className=" mb-4 text-center text-green-500" style={{ fontSize: "25px" }}>--- Draft Drivers ---</h2> */}
                 <table className="min-w-full bg-white border border-gray-200 shadow-md rounded-lg overflow-hidden">
@@ -69,17 +62,15 @@ const DraftDrivers = () => {
                             <th className="text-left px-4 py-3 border-b">First Name</th>
                             <th className="text-left px-4 py-3 border-b">Last Name</th>
                             <th className="text-left px-4 py-3 border-b">Mobile Number</th>
-                            <th className="text-left px-4 py-3 border-b">Registered At</th>
                         </tr>
                     </thead>
                     <tbody>
                         {currentDrivers.map((driver, index) => (
                             <tr key={driver.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
-                                <td className="border px-4 py-2 ">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</td>
-                                <td className="px-4 py-3 border-b">{driver.first_name}</td>
-                                <td className="px-4 py-3 border-b">{driver.last_name}</td>
+                                <td className="border px-6 py-2 ">{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</td>
+                                <td className="px-6 py-3 border-b">{driver.first_name}</td>
+                                <td className="px-6 py-3 border-b">{driver.last_name}</td>
                                 <td className="px-4 py-3 border-b">{driver.mobile_number}</td>
-                                <td className="px-4 py-3 border-b">{new Date(driver.created_at).toLocaleString()}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -97,4 +88,4 @@ const DraftDrivers = () => {
     );
 };
 
-export default DraftDrivers;
+export default RecentDrivers;

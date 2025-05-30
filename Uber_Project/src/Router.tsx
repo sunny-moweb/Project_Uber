@@ -13,6 +13,7 @@ import DriverRequests from "./components/tables/BasicTables/DriverRequests";
 import DriverDetailsView from "./pages/AuthPages/DriverDetails";
 import DraftDrivers from "./components/tables/BasicTables/DraftDrivers";
 import PaymentHistory from "./components/tables/BasicTables/PaymentHistory";
+import CustomersList from "./components/tables/BasicTables/CustomersList";
 // ... other admin imports
 
 
@@ -90,6 +91,7 @@ export default function Router() {
                     <Route path="/draft-vehicles" element={<DraftVehicle />} />
                     <Route path="/add-team-member" element={<AddTeamMember />} />
                     <Route path="/team-member" element={<TeamMemberList />} />
+                    <Route path="/customer-list" element={<CustomersList />} />
                     {/* ...other admin protected routes */}
                 </Route>
 

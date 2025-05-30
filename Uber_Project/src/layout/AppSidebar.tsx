@@ -39,7 +39,7 @@ const navItems: NavItem[] = [
     name: "Team Members",
     icon: <RiTeamLine />,
     subItems: [{ name: "Add Team Member", path: "/add-team-member", pro: false, permissionKey: "add_team_member" },
-    { name: "Team Member List", path: "/team-member", pro: false, permissionKey: "edit_team_member" },
+    { name: "Team Member List", path: "/team-member", pro: false, permissionKey: "view_team_members" },
     { name: "View Team Member", path: "", pro: false, permissionKey: "view_team_members" },
     ],
   },
@@ -87,7 +87,7 @@ const navItems: NavItem[] = [
     name: "Customers",
     icon: <FaUsers />,
     subItems: [
-      { name: "Customers", path: "/blank", pro: false, permissionKey: "customer_view" },
+      { name: "Customers", path: "/customer-list", pro: false, permissionKey: "user_view" },
       { name: "404 Error", path: "/error-404", pro: false, permissionKey: "error_404" },
     ],
   },
@@ -309,7 +309,7 @@ const AppSidebar: React.FC = () => {
       <div className={`py-8 flex ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"}`}>
         <Link to="/home">
           {isExpanded || isHovered || isMobileOpen ? (
-            <h2 style={{ color: 'blue', fontSize: '25px' }}>Taxi-Booking</h2>
+            <h2 style={{ color: 'blue', fontSize: '25px' }}>Ride-Booking</h2>
           ) : (
             <img src="/images/logo/logo-icon.svg" alt="Logo" width={32} height={32} />
           )}
