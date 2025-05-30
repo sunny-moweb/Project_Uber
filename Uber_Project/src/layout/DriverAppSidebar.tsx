@@ -268,7 +268,7 @@ const DriverAppSidebar: React.FC = () => {
         <Link to="/driver/home">
           {isExpanded || isHovered || isMobileOpen ? (
             <>
-              <h2 style={{color:'blue',fontSize:'25px'}}>DriverDashboard</h2>
+              <h2 style={{color:'blue',fontSize:'25px'}}>Ride-Booking</h2>
             </>
           ) : (
             <img

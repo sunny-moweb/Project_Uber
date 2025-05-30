@@ -24,7 +24,9 @@ const CustomerHeader: React.FC = () => {
                 <Link to="/customer/home">
                     <h2 className="text-xl sm:text-2xl font-semibold text-blue-600">Ride Booking</h2>
                 </Link>
+                <h2 className="text-center font-bold text-green-500">"Welcome Customer"</h2>
                 <div className="flex items-center space-x-4">
+
                     {/* <ThemeToggleButton /> */}
                     {/* <NotificationDropdown /> */}
                     <CustomerDropdown />

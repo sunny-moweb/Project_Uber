@@ -92,7 +92,7 @@ export default function DriverDropdown() {
       >
         <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
-            {profile.first_name}{profile.last_name}
+            <strong className="text-blue-600 font-bold">Welcome:</strong> {profile.first_name}{profile.last_name} <span className="text-blue-600">Driver</span>
           </span>
           <span className="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">
             {profile.email}
